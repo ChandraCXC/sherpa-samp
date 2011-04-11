@@ -45,6 +45,7 @@ class SherpaSession(object):
         session._add_model_types(sherpa.instrument,
                                  baselist=(sherpa.models.Model,))
         session._add_model_types(sherpa.astro.instrument)
+        session._add_model_types(sherpa.astro.optical)
         #session._add_model_types(sherpa.astro.xspec,
         #                         (sherpa.astro.xspec.XSAdditiveModel,
         #                          sherpa.astro.xspec.XSMultiplicativeModel))

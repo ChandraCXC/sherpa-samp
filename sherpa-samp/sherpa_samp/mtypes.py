@@ -61,18 +61,21 @@ metadata = {
     }
 
 cli = samp.SAMPIntegratedClient(metadata)
-cli.connect()
+
 
 _fitting_tasks = []
 _confidence_tasks = []
 
 
 def _sig_handler(signum, frame):
-    #if cli.isConnected():
-    #    cli.disconnect()
+    if cli.isConnected():
+        cli.disconnect()
     raise KeyboardInterrupt()
 
-signal.signal(signal.SIGINT, _sig_handler)
+try:
+    signal.signal(signal.SIGINT, _sig_handler)
+except ValueError:
+    pass
 
 
 def reply_success(msg_id, mtype, params={}):
@@ -886,31 +889,55 @@ _mtypes = {
 MTYPE_SPECTRUM_FIT_CONFIDENCE_EVENT = "spectrum.fit.confidence.event"
 
 
-#
-##  Register SAMP MTypes
-#
+__serving = True
+
+def stop():
+    global __serving
+    __serving = False
 
 
-for mtype in _mtypes:
-    cli.bindReceiveCall(mtype, _mtypes[mtype])
-
-def receive_call(private_key, sender_id, msg_id, mtype, params, extra):
-    #print "receive_call()..."
-    pass
-
-cli.bindReceiveCall("samp.hub.*", receive_call)
-
-def receive_notification(private_key, sender_id, mtype, params, extra):
-    #print params
-    #print "receiving notification now..."
-    pass
-
-cli.bindReceiveNotification("samp.hub.*", receive_notification)
+def main():
 
 
-def receive_response(private_key, sender_id, msg_id, response):
-    #print response
-    #print "receiving response now..."
-    pass
+    cli.connect()
 
-cli.bindReceiveResponse("samp.hub.*", receive_response)
+    #
+    ##  Register SAMP MTypes
+    #
+
+    for mtype in _mtypes:
+        cli.bindReceiveCall(mtype, _mtypes[mtype])
+
+    def receive_call(private_key, sender_id, msg_id, mtype, params, extra):
+        #print "receive_call()..."
+        pass
+
+    cli.bindReceiveCall("samp.hub.*", receive_call)
+
+    def receive_notification(private_key, sender_id, mtype, params, extra):
+        #print params
+        #print "receiving notification now..."
+        pass
+
+    cli.bindReceiveNotification("samp.hub.*", receive_notification)
+
+
+    def receive_response(private_key, sender_id, msg_id, response):
+        #print response
+        #print "receiving response now..."
+        pass
+
+    cli.bindReceiveResponse("samp.hub.*", receive_response)
+
+    try:
+        global __serving
+        while __serving:
+            time.sleep(0.5)
+    finally:
+        if cli.isConnected():
+            cli.disconnect()
+
+
+
+if __name__ == '__main__':
+    main()
