@@ -934,9 +934,8 @@ def main():
         while __serving:
             time.sleep(0.5)
     finally:
-        if cli.isConnected():
+        if cli is not None and cli.isConnected():
             cli.disconnect()
-
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ _eps  = numpy.finfo(numpy.float32).eps
 def decode_string(encoded_string, dtype="<f8"):
     decoded_string = base64.b64decode(encoded_string)
     array = numpy.fromstring(decoded_string, dtype=numpy.float64)
-    return array
+    return array.byteswap()
 
 
 def encode_string(array, dtype="<f8"):
@@ -154,24 +154,32 @@ MTYPE_SPECTRUM_FIT_FIT = "spectrum.fit.fit"
 
 class MTypeTester(unittest.TestCase):
 
-    _fit_results_bench = {'rstat': '89.29503933428586',
-                          'qval': '0.0',
-                          'succeeded': '1',
-                          'numpoints': '100',
-                          'dof': '95.0',
-                          'nfev': '93',
-                          'statval': '8483.0287367571564',
+    _fit_results_bench = {'rstat': 89.29503933428586,
+                          'qval': 0.0,
+                          'succeeded': 1,
+                          'numpoints': 100,
+                          'dof': 95,
+                          'nfev': 93,
+                          'statval': 8483.0287367571564,
                           'parnames': ['p1.gamma', 'p1.ampl', 'g1.fwhm', 'g1.pos', 'g1.ampl'], 
-                          'parvals': 'P/Efg41FwdRAIl2BFdad0UAEsI363kxSQATQHgNuWHxAR6GexGt9nQ=='}
+                          'parvals': numpy.array([1.0701938169914813,
+                                                  9.1826254677279469,
+                                                  2.5862083052721028,
+                                                  2.601619746022207,
+                                                  47.262657692418749])
+                          }
 
     def setUp(self):
         self.hub = samp.SAMPHubServer()
         self.hub.start()
-        time.sleep(0.5)
+
+        time.sleep(0.1)
+
         thread.start_new_thread(sherpa_samp.mtypes.main, ())
         self.cli = samp.SAMPIntegratedClient()
         self.cli.connect()
-        time.sleep(0.5)
+
+        time.sleep(0.1)
 
 
     def test_spectrum_fit_fit(self):
@@ -197,14 +205,29 @@ class MTypeTester(unittest.TestCase):
         assert response['samp.status'] == 'samp.ok'
 
         results = response['samp.result']
-        for key in self._fit_results_bench.keys():
-            assert results[key] == self._fit_results_bench[key]
+        results['parvals'] = decode_string(results['parvals'])
 
+        for key in ["succeeded", "numpoints", "nfev"]:
+            assert self._fit_results_bench[key] == int(results[key])
+
+        for key in ["rstat", "qval", "statval", "dof"]:
+            assert numpy.allclose(float(self._fit_results_bench[key]), float(results[key]),
+                                  1.e-7, 1.e-7)
+
+        for key in ["parvals"]:
+            assert numpy.allclose(self._fit_results_bench[key], results[key],
+                                  1.e-7, 1.e-7)
 
     def tearDown(self):
         sherpa_samp.mtypes.stop()
+
+        time.sleep(0.5)
+
         if self.cli is not None and self.cli.isConnected():
             self.cli.disconnect()
+
+        time.sleep(0.1)
+
         self.hub.stop()
 
 
