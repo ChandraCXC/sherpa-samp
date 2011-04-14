@@ -1,2 +1,3 @@
 #!/usr/bin/env python
 import sherpa_samp.mtypes
+sherpa_samp.mtypes.main()

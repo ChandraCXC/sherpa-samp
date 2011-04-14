@@ -57,19 +57,21 @@ class SherpaSession(object):
     def set_data(self, datamaps):
         if not numpy.iterable(datamaps):
             raise TypeError("datamaps is not iterable")
-        keys = ["x", "y", "staterror", "syserror", "weights"]
+        #keys = ["x", "y", "staterror", "syserror", "weights"]
+        keys = ["x", "y", "staterror", "syserror"]
         for ii, data in enumerate(datamaps):
             for key in keys:
                 if data.has_key(key):
                     data[key] = decode_string(data[key])
                     info('decoding' + key)
-                self.session.set_data(ii, sherpa.data.Data1D(**data))
+
+            self.session.set_data(ii, sherpa.data.Data1D(**data))
 
             d = self.session.get_data(ii)
-            info("DataSet %i: " % ii + str(d.x))
-            info("DataSet %i: " % ii + str(d.y))
-            info("DataSet %i: " % ii + str(d.staterror))
-            
+            numpy.set_printoptions(precision=4, threshold=6)
+            info("DataSet %i x: " % ii + numpy.array2string(d.x))
+            info("DataSet %i y: " % ii + numpy.array2string(d.y))
+            info("DataSet %i staterror: " % ii + numpy.array2string(d.staterror))
 
 
     def set_model(self, modelmaps):
@@ -121,11 +123,24 @@ class SherpaSession(object):
     def set_stat(self, statmap):
         self.session.set_stat(statmap["name"])
 
+        # FIXME: A kludge when Specview passes all zeros for staterror
+        # for NED SEDs.
+
+        # check for zeros in uncertainties when using leastsq
+        if statmap["name"] == "leastsq":
+            for ii in self.session.list_data_ids():
+                data = self.session.get_data(ii)
+                if(data.staterror is not None and
+                   (True in (data.staterror <= 0.0))):
+                    #data.staterror = numpy.ones_like(data.staterror)
+                    data.staterror = numpy.ones_like(data.y)
+
+        info(statmap["name"] + ": " + self.session.get_stat_name())
+
 
     def set_method(self, methodmap):
         self.session.set_method(methodmap["name"])
         info(methodmap["name"] + ": ")
-        #configdict = methodmap["config"]
         configdict = methodmap.get("config", None)
         if configdict is not None:
             info(methodmap["name"] + ": " + str(methodmap["config"]))
@@ -140,7 +155,6 @@ class SherpaSession(object):
         methodname = confidencemap["name"].strip().lower()
         method_opt = getattr(self.session, 'set_%s_opt' % methodname)
         info(confidencemap["name"] + ": ")
-        #configdict = confidencemap["config"]
         configdict = confidencemap.get("config", None)
         if configdict is not None:
             info(confidencemap["name"] + ": " + str(confidencemap["config"]))
@@ -169,20 +183,6 @@ class SherpaSession(object):
         method()
 
 
-    # def get_confidence_results(self, confidencemap, confidence_results=None):
-    #     if confidence_results is None:
-    #         methodname = confidencemap["name"].strip().lower()
-    #         method_result = getattr(self.session, 'get_%s_results' % methodname)
-    #         confidence_results = method_result()
-    #     results = {}
-    #     results["sigma"]    = float(confidence_results.sigma)
-    #     results["percent"]  = float(confidence_results.percent)
-    #     results["parnames"] = list(confidence_results.parnames)
-    #     results["parvals"]  = encode_string(confidence_results.parvals)
-    #     results["parmins"]  = encode_string(confidence_results.parmins)
-    #     results["parmaxes"] = encode_string(confidence_results.parmaxes)
-    #     return results
-
     def get_confidence_results(self, confidencemap, confidence_results=None):
         if confidence_results is None:
             methodname = confidencemap["name"].strip().lower()
@@ -198,21 +198,6 @@ class SherpaSession(object):
         return results
 
 
-    # def get_fit_results(self, fit_results=None):
-    #     if fit_results is None:
-    #         fit_results = self.session.get_fit_results()
-    #     results = {}
-    #     results["succeeded"] = bool(fit_results.succeeded)
-    #     results["parvals"]   = encode_string(fit_results.parvals)
-    #     results["parnames"]  = list(fit_results.parnames)
-    #     results["statval"]   = float(fit_results.statval)
-    #     results["numpoints"] = int(fit_results.numpoints)
-    #     results["dof"]       = float(fit_results.dof)
-    #     results["qval"]      = float(fit_results.qval)
-    #     results["rstat"]     = float(fit_results.rstat)
-    #     results["nfev"]      = int(fit_results.nfev)
-    #     return results
-
     def get_fit_results(self, fit_results=None):
         if fit_results is None:
             fit_results = self.session.get_fit_results()
@@ -223,7 +208,14 @@ class SherpaSession(object):
         results["statval"]   = repr(float(fit_results.statval))
         results["numpoints"] = str(int(fit_results.numpoints))
         results["dof"]       = repr(float(fit_results.dof))
-        results["qval"]      = repr(float(fit_results.qval))
-        results["rstat"]     = repr(float(fit_results.rstat))
+
+        results["qval"]      = 'nan'
+        if fit_results.qval is not None:
+            results["qval"]  = repr(float(fit_results.qval))
+
+        results["rstat"]     = 'nan'
+        if fit_results.rstat is not None:
+            results["rstat"] = repr(float(fit_results.rstat))
+
         results["nfev"]      = str(int(fit_results.nfev))
         return results
