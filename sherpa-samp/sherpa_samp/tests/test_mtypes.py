@@ -173,13 +173,13 @@ class MTypeTester(unittest.TestCase):
         self.hub = samp.SAMPHubServer()
         self.hub.start()
 
-        time.sleep(0.1)
+        time.sleep(5)
 
         thread.start_new_thread(sherpa_samp.mtypes.main, ())
         self.cli = samp.SAMPIntegratedClient()
         self.cli.connect()
 
-        time.sleep(0.1)
+        time.sleep(5)
 
 
     def test_spectrum_fit_fit(self):
@@ -221,12 +221,12 @@ class MTypeTester(unittest.TestCase):
     def tearDown(self):
         sherpa_samp.mtypes.stop()
 
-        time.sleep(0.5)
+        time.sleep(1)
 
         if self.cli is not None and self.cli.isConnected():
             self.cli.disconnect()
 
-        time.sleep(0.1)
+        time.sleep(1)
 
         self.hub.stop()
 
