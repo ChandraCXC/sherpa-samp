@@ -2,6 +2,8 @@
 
 import unittest
 import sampy as samp
+#import os
+#import os.path
 import numpy
 import time
 import base64
@@ -170,6 +172,9 @@ class MTypeTester(unittest.TestCase):
                           }
 
     def setUp(self):
+        #path = os.getcwd()
+        #lockfilename = os.path.join(path,"samp")
+        #self.hub = samp.SAMPHubServer(lockfile=lockfilename)
         self.hub = samp.SAMPHubServer()
         self.hub.start()
 

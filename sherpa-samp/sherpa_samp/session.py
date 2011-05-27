@@ -53,6 +53,9 @@ class SherpaSession(object):
         self.msg_id = msg_id
         self.mtype = mtype
 
+        # max_rstat of 3 is unhelpful in SED fitting.
+        self.session.set_conf_opt("max_rstat", 1.e+38)
+
 
     def set_data(self, datamaps):
         if not numpy.iterable(datamaps):
