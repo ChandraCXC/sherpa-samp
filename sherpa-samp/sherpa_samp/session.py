@@ -56,6 +56,9 @@ class SherpaSession(object):
         # max_rstat of 3 is unhelpful in SED fitting.
         self.session.set_conf_opt("max_rstat", 1.e+38)
 
+        # compute 90% confidence limits by default
+        self.session.set_conf_opt("sigma", 1.6448536269514722)
+
 
     def set_data(self, datamaps):
         if not numpy.iterable(datamaps):
