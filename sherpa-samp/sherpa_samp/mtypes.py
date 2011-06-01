@@ -392,18 +392,41 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
 
         try:
 
-            #ids, fitobj = sherpa._session._get_fit(None)
-            #print fitobj.data, fitobj.model
+            # native Sherpa command
+            # tt = time.time()
+            # ui.session.fit()
+            # print 'fit in', (time.time() - tt)
+            # results = ui.get_fit_results()
+
+            outq = multiprocessing.Queue()
+            errq = multiprocessing.Queue()
+
+            def worker(ui_p):
+                try:
+                    ui_p.session.fit()
+                    results = ui_p.get_fit_results()
+                    outq.put(results)
+                except Exception:
+                    e = capture_exception()
+                    errq.put(e)
+                    outq.put(None)
+
+            fit_task = multiprocessing.Process(target=worker, args=(ui,))       
+            _fitting_tasks.append(fit_task)
 
             tt = time.time()
-
-            # native Sherpa command
-            ui.session.fit()
+            fit_task.start()
+            #print 'fit PID', os.getpid()
+            fit_task.join()
             print 'fit in', (time.time() - tt)
-            results = ui.get_fit_results()
 
-            # outq = multiprocessing.Queue()
-            # errq = multiprocessing.Queue()
+            _fitting_tasks.remove(fit_task)
+
+            if not errq.empty():
+                raise Exception(errq.get())
+
+            results = outq.get()
+
             # ids, fitobj = sherpa._session._get_fit(None)
             # fit_task = multiprocessing.Process(target=fit_worker,
             #                                    args=(fitobj.fit, outq, errq))
