@@ -55,12 +55,11 @@ metadata = {
     "samp.name" : "Sherpa",
     "samp.description.text" : "Sherpa SAMP Interface",
     "cli1.version" :"0.3",
-    "samp.icon.url" : "http://hea-www.harvard.edu/~kjg/logo.png",
     "samp.description.html" : "http://cxc.harvard.edu/sherpa",
     "samp.documentation.url" : "http://cxc.harvard.edu/sherpa"
     }
 
-cli = samp.SAMPIntegratedClient(metadata)
+cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
 
 
 _fitting_tasks = []
@@ -406,9 +405,12 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
                     ui_p.session.fit()
                     results = ui_p.get_fit_results()
                     outq.put(results)
-                except Exception:
-                    e = capture_exception()
-                    errq.put(e)
+                except Exception, e:
+                    trace = capture_exception()
+                    msg = str(trace)
+                    if e.args:
+                        msg = e.args[0]
+                    errq.put( (msg, trace) )
                     outq.put(None)
 
             fit_task = multiprocessing.Process(target=worker, args=(ui,))       
@@ -423,7 +425,9 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
             _fitting_tasks.remove(fit_task)
 
             if not errq.empty():
-                raise Exception(errq.get())
+                msg, traceback = errq.get()
+                error(traceback)
+                raise Exception(msg)
 
             results = outq.get()
 
@@ -564,9 +568,12 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
 
                     results = ui_p.get_confidence_results(cdict)
                     outq.put(results)
-                except Exception:
-                    e = capture_exception()
-                    errq.put(e)
+                except Exception, e:
+                    trace = capture_exception()
+                    msg = str(trace)
+                    if e.args:
+                        msg = e.args[0]
+                    errq.put( (msg, trace) )
                     outq.put(None)
 
             #methodobj = get_confidence(params["confidence"])
@@ -589,7 +596,9 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             _confidence_tasks.remove(conf_task)
 
             if not errq.empty():
-                raise Exception(errq.get())
+                msg, traceback = errq.get()
+                error(traceback)
+                raise Exception(msg)
 
             #results = get_confidence_results(params["confidence"], outq.get())
             results = outq.get()
