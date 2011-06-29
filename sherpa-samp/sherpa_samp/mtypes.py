@@ -626,7 +626,7 @@ def spectrum_fit_fit_stop(private_key, sender_id, msg_id, mtype, params, extra):
             for task_pkg in _fitting_tasks:
                 task, fit_msg_id, fit_mtype = task_pkg
                 reply_error(fit_msg_id, sedexceptions.FitException,
-                            "Fitting stopped", fit_mtype)
+                            Exception("Fitting stopped"), fit_mtype)
                 die([task])
             global _fitting_tasks
             _fitting_tasks = []
@@ -656,7 +656,7 @@ def spectrum_fit_confidence_stop(private_key, sender_id, msg_id, mtype, params,
             for task_pkg in _confidence_tasks:
                 task, conf_msg_id, conf_mtype = task_pkg
                 reply_error(conf_msg_id, sedexceptions.ConfidenceException,
-                            "Confidence stopped", conf_mtype)
+                            Exception("Confidence stopped"), conf_mtype)
                 die([task])
             global _confidence_tasks
             _confidence_tasks = []
