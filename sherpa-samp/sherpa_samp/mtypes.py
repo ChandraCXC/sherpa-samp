@@ -352,6 +352,11 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
         info("spectrum_fit_fit()")
         ui = SherpaSession()
 
+        info("ui session _sources: " + str(ui.session._sources))
+        info("ui session _models: " + str(ui.session._models))
+        info("ui session _model_components: " + str(ui.session._model_components))
+        info("ui session _data: " + str(ui.session._data))
+
         try:
             ui.set_data(params["datasets"])
 
@@ -423,7 +428,11 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
             fit_task.join()
             print 'fit in', (time.time() - tt)
 
-            _fitting_tasks.remove((fit_task, msg_id, mtype))
+            #_fitting_tasks.remove((fit_task, msg_id, mtype))
+            try:
+                _fitting_tasks.pop(-1)
+            except IndexError:
+                pass
 
             if not errq.empty():
                 msg, traceback = errq.get()
@@ -594,7 +603,11 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             conf_task.join()
             print 'confidence in', (time.time() - tt)
 
-            _confidence_tasks.remove((conf_task, msg_id, mtype))
+            #_confidence_tasks.remove((conf_task, msg_id, mtype))
+            try:
+                _confidence_tasks.pop(-1)
+            except IndexError:
+                pass
 
             if not errq.empty():
                 msg, traceback = errq.get()

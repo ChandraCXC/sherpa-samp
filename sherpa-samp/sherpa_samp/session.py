@@ -21,6 +21,11 @@
 
 import numpy
 import sherpa.all
+
+import sherpa.ui
+import sherpa.ui.utils
+sherpa.ui.utils._assign_obj_to_main = lambda name, obj: None
+
 import sherpa.astro.all
 import sherpa.astro.ui as sherpaUI
 
