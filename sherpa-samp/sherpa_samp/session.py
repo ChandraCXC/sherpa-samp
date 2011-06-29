@@ -81,6 +81,9 @@ class SherpaSession(object):
 
 
     def set_model(self, modelmaps):
+
+        self.session._model_components={}
+
         for ii, model in enumerate(modelmaps):
             if model["name"].strip() == '':
                 raise TypeError("Model expression not found")

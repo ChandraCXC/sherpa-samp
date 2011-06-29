@@ -414,7 +414,8 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
                     outq.put(None)
 
             fit_task = multiprocessing.Process(target=worker, args=(ui,))       
-            _fitting_tasks.append(fit_task)
+
+            _fitting_tasks.append((fit_task, msg_id, mtype))
 
             tt = time.time()
             fit_task.start()
@@ -422,7 +423,7 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
             fit_task.join()
             print 'fit in', (time.time() - tt)
 
-            _fitting_tasks.remove(fit_task)
+            _fitting_tasks.remove((fit_task, msg_id, mtype))
 
             if not errq.empty():
                 msg, traceback = errq.get()
@@ -585,7 +586,7 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
                                                 args=(ui, params["confidence"]))
 
             # FIXME: this needs to be thread safe!
-            _confidence_tasks.append(conf_task)
+            _confidence_tasks.append((conf_task, msg_id, mtype))
             
             tt = time.time()
             conf_task.start()
@@ -593,7 +594,7 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             conf_task.join()
             print 'confidence in', (time.time() - tt)
 
-            _confidence_tasks.remove(conf_task)
+            _confidence_tasks.remove((conf_task, msg_id, mtype))
 
             if not errq.empty():
                 msg, traceback = errq.get()
@@ -622,8 +623,13 @@ def spectrum_fit_fit_stop(private_key, sender_id, msg_id, mtype, params, extra):
         die = (lambda tasks : [task.terminate() for task in tasks
                                if task.exitcode is None])
         if _fitting_tasks:
-            die(_fitting_tasks)
-            
+            for task_pkg in _fitting_tasks:
+                task, fit_msg_id, fit_mtype = task_pkg
+                reply_error(fit_msg_id, sedexceptions.FitException,
+                            "Fitting stopped", fit_mtype)
+                die([task])
+            _fitting_tasks = []
+
     except Exception, e:
         reply_error(msg_id, sedexceptions.FitException, e, mtype)
         return
@@ -646,8 +652,13 @@ def spectrum_fit_confidence_stop(private_key, sender_id, msg_id, mtype, params,
         die = (lambda tasks : [task.terminate() for task in tasks
                                if task.exitcode is None])
         if _confidence_tasks:
-            die(_confidence_tasks)
-            
+            for task_pkg in _confidence_tasks:
+                task, conf_msg_id, conf_mtype = task_pkg
+                reply_error(conf_msg_id, sedexceptions.ConfidenceException,
+                            "Confidence stopped", conf_mtype)
+                die([task])
+            _confidence_tasks = []
+
     except Exception, e:
         reply_error(msg_id, sedexceptions.ConfidenceException, e, mtype)
         return
