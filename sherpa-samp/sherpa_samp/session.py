@@ -51,11 +51,11 @@ def check_for_nans(ui):
         err  = session.get_staterror(ii, filter=False)
 
         mask = numpy.isnan(x)
-        mask &= numpy.isnan(y)
+        mask |= numpy.isnan(y)
 
         # No need to filter NaNs in flux error column
-        if isinstance(stat, sherpa.stats.LeastSq):
-            mask &= numpy.isnan(err)
+        if not isinstance(stat, (sherpa.stats.LeastSq, sherpa.stats.CStat, sherpa.stats.Cash)):
+            mask |= numpy.isnan(err)
 
         session.set_filter(ii, mask, ignore=True)
 
