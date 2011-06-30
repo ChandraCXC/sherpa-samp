@@ -194,7 +194,14 @@ class SherpaSession(object):
             for key in configdict:
                 if str(configdict[key]).startswith('INDEF'):
                     configdict[key] = None
-                method_opt(key, configdict[key])
+                val = None
+                try:
+                    val = float(configdict[key])
+                except:
+                    raise Exception("Sigma must be a valid floating-point value")
+                if numpy.isnan(val):
+                    raise Exception("Sigma must be a valid floating-point value")
+                method_opt(key, val)
         method_opt = getattr(self.session, 'get_%s_opt' % methodname)
         info(str(method_opt()))
 
