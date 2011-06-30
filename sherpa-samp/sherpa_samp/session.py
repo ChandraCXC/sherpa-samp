@@ -22,6 +22,7 @@
 import numpy
 import sherpa.all
 
+# Override Sherpa's feature that binds model identifiers as local objects
 import sherpa.ui
 import sherpa.ui.utils
 sherpa.ui.utils._assign_obj_to_main = lambda name, obj: None
@@ -35,7 +36,28 @@ info = logger.info
 
 from sherpa_samp.utils import encode_string, decode_string
 
-__all__ = ("SherpaSession",)
+__all__ = ("SherpaSession", "check_for_nans")
+
+
+def check_for_nans(ui):
+    session = ui.session
+
+    stat = session.get_stat()
+
+    for ii in session.list_data_ids():
+
+        x, = session.get_indep(ii, filter=False)
+        y  = session.get_dep(ii, filter=False)
+        err  = session.get_staterror(ii, filter=False)
+
+        mask = numpy.isnan(x)
+        mask &= numpy.isnan(y)
+
+        # No need to filter NaNs in flux error column
+        if isinstance(stat, sherpa.stats.LeastSq):
+            mask &= numpy.isnan(err)
+
+        session.set_filter(ii, mask, ignore=True)
 
 #
 ## Sherpa Session Object

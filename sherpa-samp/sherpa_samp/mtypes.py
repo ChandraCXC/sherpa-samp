@@ -30,7 +30,7 @@ import multiprocessing
 import sampy as samp
 
 import sherpa_samp.sedexceptions as sedexceptions
-from sherpa_samp.session import SherpaSession
+from sherpa_samp.session import SherpaSession, check_for_nans
 from sherpa_samp.utils import encode_string, capture_exception
 
 
@@ -381,6 +381,8 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
         try:
             ui.set_stat(params["stat"])
 
+            check_for_nans(ui)
+
         except Exception, e:
             reply_error(msg_id, sedexceptions.StatisticException, e, mtype)
             return
@@ -526,6 +528,8 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
 
         try:
             ui.set_stat(params["stat"])
+
+            check_for_nans(ui)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.StatisticException, e, mtype)
