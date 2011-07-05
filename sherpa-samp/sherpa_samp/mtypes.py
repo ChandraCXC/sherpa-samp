@@ -422,6 +422,7 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
 
             fit_task = multiprocessing.Process(target=worker, args=(ui,))       
 
+            global _fitting_tasks
             _fitting_tasks.append((fit_task, msg_id, mtype))
 
             tt = time.time()
@@ -598,9 +599,10 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             conf_task = multiprocessing.Process(target=worker,
                                                 args=(ui, params["confidence"]))
 
+            global _confidence_tasks
             # FIXME: this needs to be thread safe!
             _confidence_tasks.append((conf_task, msg_id, mtype))
-            
+
             tt = time.time()
             conf_task.start()
             #print 'confidence PID', os.getpid()
@@ -639,13 +641,13 @@ def spectrum_fit_fit_stop(private_key, sender_id, msg_id, mtype, params, extra):
     try:
         die = (lambda tasks : [task.terminate() for task in tasks
                                if task.exitcode is None])
+        global _fitting_tasks
         if _fitting_tasks:
             for task_pkg in _fitting_tasks:
                 task, fit_msg_id, fit_mtype = task_pkg
                 reply_error(fit_msg_id, sedexceptions.FitException,
                             Exception("Fitting stopped"), fit_mtype)
                 die([task])
-            global _fitting_tasks
             _fitting_tasks = []
 
     except Exception, e:
@@ -669,13 +671,14 @@ def spectrum_fit_confidence_stop(private_key, sender_id, msg_id, mtype, params,
     try:
         die = (lambda tasks : [task.terminate() for task in tasks
                                if task.exitcode is None])
+
+        global _confidence_tasks
         if _confidence_tasks:
             for task_pkg in _confidence_tasks:
                 task, conf_msg_id, conf_mtype = task_pkg
                 reply_error(conf_msg_id, sedexceptions.ConfidenceException,
                             Exception("Confidence stopped"), conf_mtype)
                 die([task])
-            global _confidence_tasks
             _confidence_tasks = []
 
     except Exception, e:
