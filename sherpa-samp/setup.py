@@ -21,7 +21,7 @@
 from distutils.core import setup
 
 setup(name='sherpa_samp',
-      version='0.1',
+      version='0.2',
       author='Smithsonian Astrophysical Observatory / Chandra X-Ray Center',
       author_email='cxchelp@head.cfa.harvard.edu',
       url='http://cxc.harvard.edu/sherpa/',
