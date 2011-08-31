@@ -961,11 +961,7 @@ def stop():
     __serving = False
 
 
-def main():
-
-
-    cli.connect()
-
+def register():
     #
     ##  Register SAMP MTypes
     #
@@ -994,10 +990,28 @@ def main():
 
     cli.bindReceiveResponse("samp.hub.*", receive_response)
 
+
+
+def main():
+    global cli
+    cli.connect()
+    register()
     try:
         global __serving
         while __serving:
             time.sleep(0.5)
+            connected = True
+            try:
+                cli.hub.ping()
+            except:
+                connected = False
+            if not connected:
+                cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
+                try:
+                    cli.connect()
+                    register()
+                except samp.SAMPHubError:
+                    continue
     finally:
         if cli is not None and cli.isConnected():
             cli.disconnect()
