@@ -202,6 +202,129 @@ class MTypeTester(unittest.TestCase):
 
         time.sleep(5)
 
+    def _test_tablemodel(self):
+        #data = get_data()
+        #model = get_model()
+        data = {}
+        data['name'] = 'tablemodel test'
+        data['x'] = []
+        data['y'] = []
+        data['staterror'] = []
+
+        ampl = { 'name' : 'c1.ampl',
+                 'val'  : float(1.0),
+                 'min'  : float(-_max),
+                 'max'  : float(_max),
+                 'frozen' : bool(False),
+                 }
+        c1 = {'name' : 'tablemodel.c1',
+              'pars' : [ampl]}
+        name = 'tablemodel.c1'
+        model = { 'name' : name,
+                  'parts' : [c1] }
+
+        datafile = open("sed_index_1.0.dat", "r")
+        for line in datafile:
+            cols = line.split(" ")
+            data['x'] = data['x'] + [float(cols[0])]
+            data['y'] = data['y'] + [float(cols[1])]
+            data['staterror'] = data['staterror'] + [float(cols[1]) * 0.01]
+        datafile.close()
+
+        data['x'] = encode_string(numpy.array(data['x']))
+        data['y'] = encode_string(numpy.array(data['y']))
+        data['staterror'] = encode_string(numpy.array(data['staterror']))
+
+        stat = {"name":"leastsq"}
+        method = get_method()
+        params = {
+            #'datasets' : [data, data],
+            #'models'   : [model, model],
+            'datasets' : [data],
+            'models'   : [model],
+            'usermodels' : [{ "name" : "tablemodel.c1",
+                              "file" : "sed_index_1.0.dat",
+                              "func" : ""}],
+            'stat'     : stat,
+            'method'   : method,
+            }
+        response = self.cli.callAndWait(
+            sherpa_samp.mtypes.cli.getPublicId(),
+            {'samp.mtype'  : MTYPE_SPECTRUM_FIT_FIT,
+             'samp.params' : params},
+            "10")
+        
+        assert response['samp.status'] == 'samp.ok'
+        print "Table Model OK!"
+
+    def _test_usermodel(self):
+        #data = get_data()
+        #model = get_model()
+        data = {}
+        data['name'] = 'usermodel test'
+        data['x'] = []
+        data['y'] = []
+        data['staterror'] = []
+
+        ref = { 'name' : 'c1.ref',
+                 'val'  : float(5000),
+                 'min'  : float(1.0),
+                 'max'  : float(_max),
+                 'frozen' : bool(True),
+                 }
+
+        ampl = { 'name' : 'c1.ampl',
+                 'val'  : float(1.0e8),
+                 'min'  : float(0.0),
+                 'max'  : float(_max),
+                 'frozen' : bool(False),
+                 }
+        index = { 'name' : 'c1.index',
+                 'val'  : float(-1.0),
+                 'min'  : float(-10.0),
+                 'max'  : float(10.0),
+                 'frozen' : bool(False),
+                 }
+        
+        c1 = {'name' : 'usermodel.c1',
+              'pars' : [ref, ampl, index]}
+        name = 'usermodel.c1'
+        model = { 'name' : name,
+                  'parts' : [c1] }
+
+        datafile = open("sed_index_1.0.dat", "r")
+        for line in datafile:
+            cols = line.split(" ")
+            data['x'] = data['x'] + [float(cols[0])]
+            data['y'] = data['y'] + [float(cols[1])]
+            data['staterror'] = data['staterror'] + [float(cols[1]) * 0.01]
+        datafile.close()
+
+        data['x'] = encode_string(numpy.array(data['x']))
+        data['y'] = encode_string(numpy.array(data['y']))
+        data['staterror'] = encode_string(numpy.array(data['staterror']))
+
+        stat = {"name":"leastsq"}
+        method = get_method()
+        params = {
+            #'datasets' : [data, data],
+            #'models'   : [model, model],
+            'datasets' : [data],
+            'models'   : [model],
+            'usermodels' : [{ "name" : "usermodel.c1",
+                              "file" : "mypowlaw.py",
+                              "func" : "mypowlaw"}],
+            'stat'     : stat,
+            'method'   : method,
+            }
+        response = self.cli.callAndWait(
+            sherpa_samp.mtypes.cli.getPublicId(),
+            {'samp.mtype'  : MTYPE_SPECTRUM_FIT_FIT,
+             'samp.params' : params},
+            "10")
+        
+        assert response['samp.status'] == 'samp.ok'
+        print "User Model OK!"
 
     def test_spectrum_fit_fit(self):
 
@@ -214,6 +337,7 @@ class MTypeTester(unittest.TestCase):
             #'models'   : [model, model],
             'datasets' : [data],
             'models'   : [model],
+            'usermodels' : [],
             'stat'     : stat,
             'method'   : method,
             }
@@ -239,6 +363,9 @@ class MTypeTester(unittest.TestCase):
             assert numpy.allclose(self._fit_results_bench[key], results[key],
                                   1.e-7, 1.e-7)
 
+        self._test_tablemodel()
+        self._test_usermodel()
+        
     def tearDown(self):
         sherpa_samp.mtypes.stop()
 

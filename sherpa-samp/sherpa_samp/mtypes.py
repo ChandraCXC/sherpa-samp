@@ -217,7 +217,7 @@ def spectrum_fit_set_model(private_key, sender_id, msg_id, mtype, params,
         ui = SherpaSession()
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -358,6 +358,13 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
         info("ui session _data: " + str(ui.session._data))
 
         try:
+            ui.set_method(params["method"])
+
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.MethodException, e, mtype)
+            return
+
+        try:
             ui.set_data(params["datasets"])
 
         except Exception, e:
@@ -365,7 +372,7 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
             return
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -385,13 +392,6 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.StatisticException, e, mtype)
-            return
-
-        try:
-            ui.set_method(params["method"])
-
-        except Exception, e:
-            reply_error(msg_id, sedexceptions.MethodException, e, mtype)
             return
 
         results = None
@@ -507,6 +507,13 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
         ui = SherpaSession()
 
         try:
+            ui.set_method(params["method"])
+
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.MethodException, e, mtype)
+            return
+
+        try:
             ui.set_data(params["datasets"])
 
         except Exception, e:
@@ -514,7 +521,7 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             return
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -536,14 +543,8 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             reply_error(msg_id, sedexceptions.StatisticException, e, mtype)
             return
 
-        try:
-            ui.set_method(params["method"])
-
-        except Exception, e:
-            reply_error(msg_id, sedexceptions.MethodException, e, mtype)
-            return
-
         results = None
+        
         try:
 
             #ui.set_confidence(params["confidence"])
@@ -714,7 +715,7 @@ def spectrum_fit_calc_statistic_value(private_key, sender_id, msg_id, mtype, par
             return
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -770,7 +771,7 @@ def spectrum_fit_calc_statistic_values(private_key, sender_id, msg_id, mtype,
             return
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
             
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -833,7 +834,7 @@ def spectrum_fit_calc_model_values(private_key, sender_id, msg_id, mtype,
             return
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -894,7 +895,7 @@ def spectrum_fit_calc_flux_value(private_key, sender_id, msg_id, mtype, params,
             return
 
         try:
-            ui.set_parameters(params["models"])
+            ui.set_parameters(params["models"], params["usermodels"])
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
