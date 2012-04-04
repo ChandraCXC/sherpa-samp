@@ -243,8 +243,7 @@ class MTypeTester(unittest.TestCase):
             'datasets' : [data],
             'models'   : [model],
             'usermodels' : [{ "name" : "tablemodel.c1",
-                              "file" : "sed_index_1.0.dat",
-                              "func" : ""}],
+                              "file" : "sed_index_1.0.dat" }],
             'stat'     : stat,
             'method'   : method,
             }
@@ -312,8 +311,7 @@ class MTypeTester(unittest.TestCase):
             'datasets' : [data],
             'models'   : [model],
             'usermodels' : [{ "name" : "usermodel.c1",
-                              "file" : "mypowlaw.py",
-                              "func" : "mypowlaw"}],
+                              "file" : "mypowlaw.py" }],
             'stat'     : stat,
             'method'   : method,
             }

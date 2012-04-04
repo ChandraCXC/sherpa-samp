@@ -136,7 +136,8 @@ class SherpaSession(object):
                 # First. load usermodel code from Python file
                 execfile(model_info["file"])
                 # Get reference to user model function
-                func_ref = eval(model_info["func"])
+                # Same as name of file, but with ".py" stripped
+                func_ref = eval(model_info["file"].split('.')[0])
                 self.session.load_user_model(func_ref,
                                              model_name)
 
