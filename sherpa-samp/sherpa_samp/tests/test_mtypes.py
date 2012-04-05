@@ -335,7 +335,6 @@ class MTypeTester(unittest.TestCase):
             #'models'   : [model, model],
             'datasets' : [data],
             'models'   : [model],
-            'usermodels' : [],
             'stat'     : stat,
             'method'   : method,
             }

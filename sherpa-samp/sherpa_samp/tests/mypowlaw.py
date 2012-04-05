@@ -5,3 +5,5 @@ def mypowlaw(p, x):
     arg = p[1] * numpy.power(arg, p[2])
 
     return arg
+
+user_model_ref = mypowlaw

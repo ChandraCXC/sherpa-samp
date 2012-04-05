@@ -119,55 +119,77 @@ class SherpaSession(object):
     def set_parameters(self, modelmaps, usermodels):
         # If entries in usermodels dictionary, interpret them here
         for model_info in usermodels:
-            # The "name" is sctually type.name
-            # eg. tablemodel.c1 so split it
-            model_type=model_info["name"].split('.')[0]
-            model_name=model_info["name"].split('.')[1]
-            if (model_type == "tablemodel"):
-                self.session.load_table_model(model_name,
-                                              model_info["file"])
-            if (model_type == "templatemodel"):
-                # Template model fits can only be done with
-                # grid search
-                self.session.load_template_model(model_name,
-                                                 model_info["file"])
-                self.session.set_method("gridsearch")
-            if (model_type == "usermodel"):
-                # First. load usermodel code from Python file
-                execfile(model_info["file"])
-                # Get reference to user model function
-                # Same as name of file, but with ".py" stripped
-                func_ref = eval(model_info["file"].split('.')[0])
-                self.session.load_user_model(func_ref,
-                                             model_name)
+            # Check that model name is a string and can be split
+            if (type(model_info["name"]) == type("str")):
+                if (len(model_info["name"].split('.')) == 2):
 
-                # Now, look in modelmaps for instance of user model
-                # That has a dictionary of parameters, so create
-                # user model parameters from entries in that dictionary
-                for ii, model in enumerate(modelmaps):
-                    for component in model["parts"]:
-                        if (model_info["name"] == component["name"]):
-                            parnames = []
-                            parvals = []
-                            parmins = []
-                            parmaxs = []
-                            parfrozen = []
-                            for pardict in component["pars"]:
-                                parnames = parnames + [pardict["name"].split(".")[1]]
-                                parvals = parvals + [float(pardict["val"])]
-                                parmins = parmins + [float(pardict["min"])]
-                                parmaxs = parmaxs + [float(pardict["max"])]
-                                parfrozen = parfrozen + [bool(int(pardict["frozen"]))]
+                    model_type = None
+                    model_name = None
+                    try:
+                        # The "name" is actually type.name
+                        # eg. tablemodel.c1 so split it
+                        model_type=model_info["name"].split('.')[0]
+                        model_name=model_info["name"].split('.')[1]
+                    
+                        if (model_type == "tablemodel"):
+                            self.session.load_table_model(model_name,
+                                                          model_info["file"])
+                        
+                        if (model_type == "templatemodel"):
+                            # Template model fits can only be done with
+                            # grid search
+                            self.session.load_template_model(model_name,
+                                                             model_info["file"])
+                            self.session.set_method("gridsearch")
+                        
+                        if (model_type == "usermodel"):
+                            # user_model_ref set by code in user model
+                            # Python file
+                            execfile(model_info["file"])
+                            # Get reference to user model function
+                            # Same as name of file, but with ".py" stripped
+                            func_ref = model_info["file"].split('/')[-1]
+                            func_ref = func_ref.split('.')[0]
+                            func_ref = eval(func_ref)
+                            self.session.load_user_model(func_ref,
+                                                         model_name)
+
+                            # Now, look in modelmaps for instance of user model
+                            # That has a dictionary of parameters, so create
+                            # user model parameters from entries in that dictionary
+                            for ii, model in enumerate(modelmaps):
+                                for component in model["parts"]:
+                                    if (model_info["name"] == component["name"]):
+                                        parnames = []
+                                        parvals = []
+                                        parmins = []
+                                        parmaxs = []
+                                        parfrozen = []
+                                        for pardict in component["pars"]:
+                                            parnames = parnames + [pardict["name"].split(".")[1]]
+                                            parvals = parvals + [float(pardict["val"])]
+                                            parmins = parmins + [float(pardict["min"])]
+                                            parmaxs = parmaxs + [float(pardict["max"])]
+                                            parfrozen = parfrozen + [bool(int(pardict["frozen"]))]
                             
-                            self.session.add_user_pars(model_name,
-                                                       parnames,
-                                                       parvals,
-                                                       parmins,
-                                                       parmaxs,
-                                                       None,
-                                                       parfrozen)
-                            break
-        # end of block to interpret user models
+                                        self.session.add_user_pars(model_name,
+                                                                   parnames,
+                                                                   parvals,
+                                                                   parmins,
+                                                                   parmaxs,
+                                                                   None,
+                                                                   parfrozen)
+                                        break
+                        # end of block to interpret user models            
+                    except Exception, e:
+                        info(str(e))
+                        try:
+                            if (model_name != None):
+                                self.session.delete_model_component(model_name)
+                        except:
+                            pass
+                        
+        # end of block to interpret custom models
 
         # Now, update parameter values, and create *or* update
         # model components, for all components listed in modelmaps.

@@ -217,7 +217,10 @@ def spectrum_fit_set_model(private_key, sender_id, msg_id, mtype, params,
         ui = SherpaSession()
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -372,7 +375,10 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
             return
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -521,7 +527,10 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             return
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -715,7 +724,10 @@ def spectrum_fit_calc_statistic_value(private_key, sender_id, msg_id, mtype, par
             return
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -771,7 +783,10 @@ def spectrum_fit_calc_statistic_values(private_key, sender_id, msg_id, mtype,
             return
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
             
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -834,7 +849,10 @@ def spectrum_fit_calc_model_values(private_key, sender_id, msg_id, mtype,
             return
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
@@ -895,7 +913,10 @@ def spectrum_fit_calc_flux_value(private_key, sender_id, msg_id, mtype, params,
             return
 
         try:
-            ui.set_parameters(params["models"], params["usermodels"])
+            usermodels = []
+            if (params.has_key("usermodels")):
+                usermodels = params["usermodels"]
+            ui.set_parameters(params["models"], usermodels)
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
