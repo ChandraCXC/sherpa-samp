@@ -19,12 +19,9 @@
 #
 
 
-import os
-import sys
 import time
 import numpy
 import signal
-import threading
 import multiprocessing
 
 import sampy as samp
