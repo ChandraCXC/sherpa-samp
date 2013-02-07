@@ -68,6 +68,7 @@ class SherpaSession(object):
     def __init__(self, msg_id=None, mtype=None):
         session = sherpaUI.utils.Session()
         session._add_model_types(sherpa.models.basic)
+        session._add_model_types(sherpa.models.template)
         session._add_model_types(sherpa.astro.models)
         session._add_model_types(sherpa.instrument,
                                  baselist=(sherpa.models.Model,))
@@ -133,23 +134,23 @@ class SherpaSession(object):
                     
                         if (model_type == "tablemodel"):
                             self.session.load_table_model(model_name,
-                                                          model_info["file"])
-                        
+                                                          model_info["file"].strip())
+
                         if (model_type == "templatemodel"):
                             # Template model fits can only be done with
                             # grid search
                             self.session.load_template_model(model_name,
-                                                             model_info["file"])
+                                                             model_info["file"].strip())
                             self.session.set_method("gridsearch")
+                            tempmdl = self.session.get_model_component(model_name)
+                            self.session.set_method_opt("sequence", tempmdl.parvals)
                         
                         if (model_type == "usermodel"):
                             # user_model_ref set by code in user model
                             # Python file
-                            execfile(model_info["file"])
+                            execfile(model_info["file"].strip())
                             # Get reference to user model function
-                            # Same as name of file, but with ".py" stripped
-                            func_ref = model_info["file"].split('/')[-1]
-                            func_ref = func_ref.split('.')[0]
+                            func_ref = model_info["function"].strip()
                             func_ref = eval(func_ref)
                             self.session.load_user_model(func_ref,
                                                          model_name)
@@ -166,7 +167,7 @@ class SherpaSession(object):
                                         parmaxs = []
                                         parfrozen = []
                                         for pardict in component["pars"]:
-                                            parnames = parnames + [pardict["name"].split(".")[1]]
+                                            parnames = parnames + [pardict["name"].split(".")[1].strip()]
                                             parvals = parvals + [float(pardict["val"])]
                                             parmins = parmins + [float(pardict["min"])]
                                             parmaxs = parmaxs + [float(pardict["max"])]
@@ -182,12 +183,11 @@ class SherpaSession(object):
                                         break
                         # end of block to interpret user models            
                     except Exception, e:
-                        info(str(e))
                         try:
                             if (model_name != None):
                                 self.session.delete_model_component(model_name)
                         except:
-                            pass
+                            raise e
                         
         # end of block to interpret custom models
 
@@ -208,7 +208,7 @@ class SherpaSession(object):
                         raise TypeError("Model component name missing")
 
                     par = self.session.get_par(pardict["name"])
-                    parname = pardict.pop("name").split(".")[1]
+                    parname = pardict.pop("name").split(".")[1].strip()
 
                     # Specview sends parameter attributes as strings,
                     # convert to floats here.  

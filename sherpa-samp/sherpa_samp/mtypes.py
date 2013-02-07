@@ -19,9 +19,12 @@
 #
 
 
+import os
+import sys
 import time
 import numpy
 import signal
+import threading
 import multiprocessing
 
 import sampy as samp
@@ -51,7 +54,7 @@ error = logger.error
 metadata = {
     "samp.name" : "Sherpa",
     "samp.description.text" : "Sherpa SAMP Interface",
-    "cli1.version" :"0.3",
+    "cli1.version" :"0.3.1",
     "samp.description.html" : "http://cxc.harvard.edu/sherpa",
     "samp.documentation.url" : "http://cxc.harvard.edu/sherpa"
     }
@@ -66,10 +69,16 @@ _confidence_tasks = []
 def _sig_handler(signum, frame):
     if cli.isConnected():
         cli.disconnect()
-    raise KeyboardInterrupt()
+    if (signum == signal.SIGINT):
+        raise KeyboardInterrupt()
+    if (signum == signal.SIGTERM):
+        sys.exit(1)
 
 try:
-    signal.signal(signal.SIGINT, _sig_handler)
+    # Handle either keyboard interrupt from interactive
+    # session, or termination signal
+    signal.signal(signal.SIGINT, _sig_handler)   # I.e., kill -2
+    signal.signal(signal.SIGTERM, _sig_handler)  # I.e., kill or kill -15
 except ValueError:
     pass
 
@@ -1013,8 +1022,6 @@ def register():
 
 def main():
     global cli
-    cli.connect()
-    register()
     try:
         global __serving
         while __serving:
