@@ -22,9 +22,18 @@ import numpy
 import base64
 import traceback
 import cStringIO
+import re
 
 
-__all__ = ('decode_string', 'encode_string', 'capture_exception')
+__all__ = ('decode_string', 'encode_string', 'capture_exception', 'DictionaryClass')
+
+first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+all_cap_re = re.compile('([a-z0-9])([A-Z])')
+
+def convert(name):
+    s0 = name.replace("-", "_")
+    s1 = first_cap_re.sub(r'\1_\2', s0)
+    return all_cap_re.sub(r'\1_\2', s1).lower()
 
 
 def decode_string(encoded_string, dtype="<f8"):
@@ -34,15 +43,12 @@ def decode_string(encoded_string, dtype="<f8"):
     # array = numpy.ndarray(shape, dtype, decoded_string)
     return array
 
-
 def encode_string(array, dtype="<f8"):
 
     array = numpy.asarray(array, dtype=numpy.float64)
     decoded_string = array.byteswap().tostring()
     encoded_string = base64.b64encode(decoded_string)
     return encoded_string
-
-
 
 def capture_exception():
     trace = cStringIO.StringIO()
@@ -51,3 +57,27 @@ def capture_exception():
     trace.close()
     return value
 
+class DictionaryClass(object):
+    def __init__(self, obj):
+        
+        for k, v in obj.iteritems():
+          if isinstance(v, dict):
+            setattr(self, convert(k), DictionaryClass(v))
+          else:
+            setattr(self, convert(k), v)
+        
+    def __getitem__(self, val):
+        return self.__dict__[val]
+  
+    def __repr__(self):
+        return '{%s}' % str(', '.join('%s : %s' % (k, repr(v)) for
+          (k, v) in self.__dict__.iteritems()))
+          
+    def get_dict(self):
+        resp = {}
+        for k,v in self.__dict__.iteritems():
+            if isinstance(v, DictionaryClass):
+                resp[k] = v.get_dict()
+            else:
+                resp[k] = v
+        return resp

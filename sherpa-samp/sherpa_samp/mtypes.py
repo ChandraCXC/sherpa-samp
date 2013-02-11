@@ -19,19 +19,19 @@
 #
 
 
-import os
 import sys
 import time
 import numpy
 import signal
-import threading
 import multiprocessing
 
 import sampy as samp
 
 import sherpa_samp.sedexceptions as sedexceptions
 from sherpa_samp.session import SherpaSession, check_for_nans
-from sherpa_samp.utils import encode_string, capture_exception
+from sherpa_samp.utils import encode_string, decode_string, capture_exception, DictionaryClass
+from sherpa_samp.sed import Sed
+from sherpa.utils import linear_interp, neville, nearest_interp
 
 
 #
@@ -955,6 +955,85 @@ def spectrum_fit_calc_flux_value(private_key, sender_id, msg_id, mtype, params,
     except Exception:
         error(str(capture_exception()))
 
+
+def spectrum_redshift_calc(private_key, sender_id, msg_id, mtype, params,
+                                      extra):
+    """
+    spectrum_redshift_calc
+
+
+
+    """
+    try:
+        info("spectrum_redshift_calc()")
+        try:
+            payload = DictionaryClass(params)
+            x = decode_string(payload.x)
+            y = decode_string(payload.y)
+            from_redshift = float(payload.from_redshift)
+            to_redshift = float(payload.to_redshift)
+            
+            sed = Sed(x, y, from_redshift)
+            sed.redshift(to_redshift)
+            
+            payload.x = encode_string(sed.wavelength)
+            payload.y = encode_string(sed.flux)
+            
+            reply_success(msg_id, mtype, payload)
+            
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.SEDException, e, mtype)
+            return
+
+    except Exception:
+        error(str(capture_exception()))
+
+def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
+                                      extra):
+    """
+    spectrum_interpolate
+
+
+
+    """
+    
+    try:
+        info("spectrum_interpolate()")
+        try:
+            methods = {'Neville' : neville,
+                       'Linear' : linear_interp,
+                       'Nearest Neighbor' : nearest_interp,
+                       }
+            payload = DictionaryClass(params)
+            x = decode_string(payload.x)
+            y = decode_string(payload.y)
+            x_min = max(float(payload.x_min), min(x))
+            x_max = min(float(payload.x_max), max(x))
+            method = methods[payload.method]
+            info("method " + method.__name__)
+            n_bins = int(payload.n_bins)
+            
+            sed = Sed(x, y)
+            newSed = sed.interpolate(method, (x_min, x_max), n_bins);
+
+            if(payload.normalize=="true"):
+                info('normalizing')
+                newSed.normalise()
+            
+            payload.x = encode_string(newSed.wavelength)
+            payload.y = encode_string(newSed.flux)
+            
+            reply_success(msg_id, mtype, payload)
+            info("success")
+            
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.SEDException, e, mtype)
+            error("error: " + repr(e))
+            return
+
+    except Exception:
+        error(str(capture_exception()))
+
 #
 ## SAMP MTypes
 #
@@ -976,6 +1055,8 @@ _mtypes = {
     "spectrum.fit.calc.statistic.values" : spectrum_fit_calc_statistic_values,
     "spectrum.fit.calc.model.values"     : spectrum_fit_calc_model_values,
     "spectrum.fit.calc.flux.value"       : spectrum_fit_calc_flux_value,
+    "spectrum.redshift.calc"      : spectrum_redshift_calc,
+    "spectrum.interpolate"   : spectrum_interpolate,
 
 }
 

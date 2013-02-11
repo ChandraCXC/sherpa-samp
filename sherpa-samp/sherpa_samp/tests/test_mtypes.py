@@ -365,6 +365,9 @@ class MTypeTester(unittest.TestCase):
         self._test_tablemodel()
         self._test_usermodel()
         
+    def test_spectrum_redshift_calc(self):
+        pass
+        
     def tearDown(self):
         sherpa_samp.mtypes.stop()
 
