@@ -23,7 +23,7 @@ __author__="olaurino"
 __date__ ="$Feb 4, 2013 5:05:26 PM$"
 
 from astLib.astSED import SED as astSed
-from numpy import trapz, array, logspace, ceil, floor, log10, mean
+from numpy import trapz, array, logspace, linspace, ceil, floor, log10
 
 class Sed(astSed):
     """
@@ -58,7 +58,7 @@ class Sed(astSed):
         
         astSed.__init__(self, wavelength_z0, flux_z0, z)
         
-    def interpolate(self, function, interval, num_bins):
+    def interpolate(self, function, interval, num_bins, log):
         """
         Use function to interpolate this sed in a defined interval divided into
         num_bins bins.
@@ -66,9 +66,15 @@ class Sed(astSed):
         Function must take argument xout, xin, yin and return an yout array.
         """
         
-        xmin=floor(log10(interval[0]))
-        xmax=ceil(log10(interval[1]))
-        bins=logspace(xmin, xmax, num_bins, endpoint=True)
+        
+        if log:
+            xmin=floor(log10(interval[0]))
+            xmax=ceil(log10(interval[1]))
+            bins=logspace(xmin, xmax, num_bins, endpoint=True)
+        else:
+            xmin=interval[0]
+            xmax=interval[1]
+            bins=linspace(xmin, xmax, num_bins, endpoint=True)
         flux=function(log10(bins), log10(self.wavelength), log10(self.flux))
         return Sed(bins, 10**flux)
         

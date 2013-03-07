@@ -32,6 +32,7 @@ from sherpa_samp.session import SherpaSession, check_for_nans
 from sherpa_samp.utils import encode_string, decode_string, capture_exception, DictionaryClass
 from sherpa_samp.sed import Sed
 from sherpa.utils import linear_interp, neville, nearest_interp
+from sherpa_samp.interpolation import interp1d
 
 
 #
@@ -1003,6 +1004,7 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
             methods = {'Neville' : neville,
                        'Linear' : linear_interp,
                        'Nearest Neighbor' : nearest_interp,
+                       'Linear Spline' : interp1d,
                        }
             payload = DictionaryClass(params)
             x = decode_string(payload.x)
@@ -1013,8 +1015,10 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
             info("method " + method.__name__)
             n_bins = int(payload.n_bins)
             
+            log = payload.log=='true';
+            
             sed = Sed(x, y)
-            newSed = sed.interpolate(method, (x_min, x_max), n_bins);
+            newSed = sed.interpolate(method, (x_min, x_max), n_bins, log);
 
             if(payload.normalize=="true"):
                 info('normalizing')
