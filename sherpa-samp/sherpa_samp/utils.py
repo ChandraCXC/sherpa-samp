@@ -63,9 +63,18 @@ class DictionaryClass(object):
         for k, v in obj.iteritems():
           if isinstance(v, dict):
             setattr(self, convert(k), DictionaryClass(v))
+          elif isinstance(v, list):
+            newlist = list()
+            for i in range(len(v)):
+                elem = v.pop()
+                if isinstance(elem, dict):
+                    newlist.append(DictionaryClass(elem))
+                else:
+                    newlist.append(elem)
+            setattr(self, convert(k), newlist)
           else:
             setattr(self, convert(k), v)
-        
+
     def __getitem__(self, val):
         return self.__dict__[val]
   

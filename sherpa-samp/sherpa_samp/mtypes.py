@@ -31,6 +31,7 @@ import sherpa_samp.sedexceptions as sedexceptions
 from sherpa_samp.session import SherpaSession, check_for_nans
 from sherpa_samp.utils import encode_string, decode_string, capture_exception, DictionaryClass
 from sherpa_samp.sed import Sed
+from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
 
@@ -988,6 +989,55 @@ def spectrum_redshift_calc(private_key, sender_id, msg_id, mtype, params,
 
     except Exception:
         error(str(capture_exception()))
+        
+def spectrum_integrate(private_key, sender_id, msg_id, mtype, params,
+                                      extra):
+    """
+    spectrum_integrate
+
+
+
+    """
+    try:
+        info("spectrum_integrate()")
+        try:
+            payload = DictionaryClass(params)
+            
+            x = decode_string(payload.x)
+            y = decode_string(payload.y)
+            
+            sed = Sed(x, y)
+            
+            response = dict()
+            response['points'] = list()
+            
+            for curve in payload.curves:
+                pb = Passband(curve.file_name)
+                flux = sed.calcFlux(pb)
+                point = dict()
+                point['id'] = curve.id
+                point['wavelength'] = curve.eff_wave
+                point['flux'] = str(flux)
+                response['points'].append(point)
+                
+            for window in payload.windows:
+                xmin = float(window.min)
+                xmax = float(window.max)
+                flux = sed.integrate(xmin, xmax)
+                point = dict()
+                point['id'] = window.id
+                point['wavelength'] = str((xmax+xmin)/2)
+                point['flux'] = str(flux)
+                response['points'].append(point)
+            
+            reply_success(msg_id, mtype, response)
+            
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.SEDException, e, mtype)
+            return
+
+    except Exception:
+        error(str(capture_exception()))
 
 def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
                                       extra):
@@ -1061,7 +1111,7 @@ _mtypes = {
     "spectrum.fit.calc.flux.value"       : spectrum_fit_calc_flux_value,
     "spectrum.redshift.calc"      : spectrum_redshift_calc,
     "spectrum.interpolate"   : spectrum_interpolate,
-
+    "spectrum.integrate"   : spectrum_integrate,
 }
 
 MTYPE_SPECTRUM_FIT_CONFIDENCE_EVENT = "spectrum.fit.confidence.event"
