@@ -28,6 +28,7 @@ import multiprocessing
 import sampy as samp
 
 import sherpa_samp.sedexceptions as sedexceptions
+import numpy as np
 from sherpa_samp.session import SherpaSession, check_for_nans
 from sherpa_samp.utils import encode_string, decode_string, capture_exception, DictionaryClass
 from sherpa_samp.sed import Sed
@@ -1070,8 +1071,17 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
             sed = Sed(x, y)
             newSed = sed.interpolate(method, (x_min, x_max), n_bins, log);
 
-            if(payload.normalize=="true"):
+            filtered = False
+
+            if payload.smooth == "true":
+                info('smoothing')
+                newSed = filter(newSed)
+                newSed.smooth(int(payload.box_size))
+
+            if payload.normalize=="true":
                 info('normalizing')
+                if not filtered:
+                    newSed = filter(newSed)
                 newSed.normalise()
             
             payload.x = encode_string(newSed.wavelength)
@@ -1087,6 +1097,15 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
 
     except Exception:
         error(str(capture_exception()))
+
+def filter(sed):
+    x = sed.wavelength
+    y = sed.flux
+    c = numpy.array((x,y)).T
+    c = c[~np.isnan(c).any(1)].T
+    x = c[0]
+    y = c[1]
+    return Sed(x,y)
 
 #
 ## SAMP MTypes
