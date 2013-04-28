@@ -54,9 +54,17 @@ def check_for_nans(ui):
         mask |= numpy.isnan(y)
 
         # No need to filter NaNs in flux error column
+        # unless statistic actually uses errors
+        # Least-squares, cash, c-stat do *not* use errors
+        # chi-squared *does* use errors.
         if not isinstance(stat, (sherpa.stats.LeastSq, sherpa.stats.CStat, sherpa.stats.Cash)):
             mask |= numpy.isnan(err)
-
+            # When using chi-squared, also automatically filter out
+            # data points where the error bar is zero -- actually where
+            # (err - 0.0) is smaller than epsilon.  The fit will 
+            # proceed with usable errors.
+            import numpy.core.machar as ma
+            mask = numpy.where(numpy.abs(err - 0.0) < ma.MachAr().epsilon, False, mask)
         session.set_filter(ii, mask, ignore=True)
 
 #
