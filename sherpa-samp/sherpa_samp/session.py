@@ -64,7 +64,7 @@ def check_for_nans(ui):
             # (err - 0.0) is smaller than epsilon.  The fit will 
             # proceed with usable errors.
             import numpy.core.machar as ma
-            mask = numpy.where(numpy.abs(err - 0.0) < ma.MachAr().epsilon, False, mask)
+            mask = numpy.where(numpy.abs(err - 0.0) < ma.MachAr().epsilon, True, mask)
         session.set_filter(ii, mask, ignore=True)
 
 #
