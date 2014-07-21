@@ -31,5 +31,5 @@ setup(name='sherpa_samp',
       entry_points = {
          'console_scripts' : ['sherpa-samp=sherpa_samp.mtypes:main'],
       },
-      install_requires = ['astLib', 'scipy', 'sherpa', 'numpy'],
+      requires = ['astLib', 'scipy', 'sherpa', 'numpy'],
       )
