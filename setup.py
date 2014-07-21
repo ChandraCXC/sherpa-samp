@@ -18,7 +18,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from distutils.core import setup
+from numpy.distutils.core import setup
 
 setup(name='sherpa_samp',
       version='0.3.1',
@@ -27,5 +27,8 @@ setup(name='sherpa_samp',
       url='http://cxc.harvard.edu/sherpa/',
       description='A SAMP interface to the Sherpa modeling and fitting package for scientific data analysis',
       packages=['sherpa_samp'],
-      scripts=['scripts/sherpa_samp']
+      entry_points = {
+         'console_scripts' : ['sherpa-samp=sherpa_samp.mtypes:main'],
+      },
+      install_requires = ['astLib', 'scipy', 'sherpa', 'numpy'],
       )

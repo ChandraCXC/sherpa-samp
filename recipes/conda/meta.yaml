@@ -1,0 +1,23 @@
+package:
+  name: sherpa
+  version: "1.0"
+
+build:
+  number: "0"
+
+requirements:
+  build:
+   - python 2.7.*
+   - numpy
+
+  run:
+   - sherpa
+   - astLib
+   - scipy
+   - numpy
+
+about:
+  home : https://github.com/ChandraCXC/sherpa-samp
+  summary : samp interface for sherpa
+  license: GPLv3
+ 
