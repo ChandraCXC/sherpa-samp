@@ -1,18 +1,20 @@
 package:
-  name: sherpa
-  version: "1.0"
+  name: sherpa-samp
+  version: "0.3.1"
 
 build:
   number: "0"
 
 requirements:
   build:
+   - setuptools
    - python 2.7.*
    - numpy
 
   run:
+   - setuptools
    - sherpa
-   - astLib
+   - astlib
    - scipy
    - numpy
 
