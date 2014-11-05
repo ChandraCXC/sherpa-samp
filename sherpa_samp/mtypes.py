@@ -35,7 +35,7 @@ from sherpa_samp.sed import Sed
 from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
-
+from sedstacker import normalize
 
 #
 ## Logging
@@ -1107,6 +1107,117 @@ def filter(sed):
     y = c[1]
     return Sed(x,y)
 
+def stack_redshift(private_key, sender_id, msg_id, mtype, params,
+                                      extra):
+    try:
+        info("stack_redshift()")
+        try:
+            payload = DictionaryClass(params)
+            xs = decode_string(payload.x)
+            ys = decode_string(payload.y)
+            yerrs = decode_string(payload.yerr)
+            from_redshift = decode_string(payload.from_redshift)
+            to_redshift = float(payload.z)
+            correct_flux = bool(payload.correct_flux)
+
+            seds = []
+
+            for i in range(len(xs)):
+                x = xs[i]
+                y = ys[i]
+                yerr = yerrs[i]
+                z = from_redshift[i]
+                seds.append(Sed(x=x,y=y,yerr=yerr,z=z))
+
+            result = Stack(seds).shift(to_redshift, correct_flux=correct_flux)
+            payload.x = encode_string(result.x)
+            payload.y = encode_string(result.y)
+            payload.yerr = encode_string(result.yerr)
+
+            reply_success(msg_id, mtype, payload)
+
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.SEDException, e, mtype)
+            return
+
+    except Exception:
+        error(str(capture_exception()))
+
+def stack_normalize(private_key, sender_id, msg_id, mtype, params,
+                                      extra):
+    try:
+        info("stack_normalize()")
+        try:
+            payload = DictionaryClass(params)
+            xs = decode_string(payload.x)
+            ys = decode_string(payload.y)
+            yerrs = decode_string(payload.yerr)
+
+            seds = []
+
+            for i in range(len(xs)):
+                x = xs[i]
+                y = ys[i]
+                yerr = yerrs[i]
+                seds.append(Sed(x=x,y=y,yerr=yerr))
+
+            stack = Stack(seds)
+
+            result = normalize(stack, payload)
+
+            payload.x = encode_string(result.x)
+            payload.y = encode_string(result.y)
+            payload.yerr = encode_string(result.yerr)
+            payload.norm_constant = result.norm_constant
+
+            reply_success(msg_id, mtype, payload)
+
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.SEDException, e, mtype)
+            return
+
+    except Exception:
+        error(str(capture_exception()))
+
+def stack_stack(private_key, sender_id, msg_id, mtype, params,
+                                      extra):
+    try:
+        info("stack_stack()")
+        try:
+            payload = DictionaryClass(params)
+            xs = decode_string(payload.x)
+            ys = decode_string(payload.y)
+            yerrs = decode_string(payload.yerr)
+
+            binsize = decode_string(payload.binsize)
+            statistic = str(payload.statistic)
+            smooth = bool(payload.smooth)
+            smooth_binsize = payload.smooth_binsize
+            logbin = payload.logbin
+
+            seds = []
+
+            for i in range(len(xs)):
+                x = xs[i]
+                y = ys[i]
+                yerr = yerrs[i]
+                seds.append(Sed(x=x,y=y,yerr=yerr,z=z))
+
+            result = stack(Stack(seds), binsize, statistic, fill='remove', smooth=smooth, snooth_binsize=smooth_binsize, logbin=logbin)
+            payload.x = encode_string(result.x)
+            payload.y = encode_string(result.y)
+            payload.yerr = encode_string(result.yerr)
+            payload.counts = encode_string(result.counts)
+
+            reply_success(msg_id, mtype, payload)
+
+        except Exception, e:
+            reply_error(msg_id, sedexceptions.SEDException, e, mtype)
+            return
+
+    except Exception:
+        error(str(capture_exception()))
+
 #
 ## SAMP MTypes
 #
@@ -1131,6 +1242,9 @@ _mtypes = {
     "spectrum.redshift.calc"      : spectrum_redshift_calc,
     "spectrum.interpolate"   : spectrum_interpolate,
     "spectrum.integrate"   : spectrum_integrate,
+    "stack.redshift" : stack_redshift,
+    "stack.normalize" : stack_normalize,
+    "stack.stack" : stack_stack
 }
 
 MTYPE_SPECTRUM_FIT_CONFIDENCE_EVENT = "spectrum.fit.confidence.event"
