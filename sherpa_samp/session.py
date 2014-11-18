@@ -145,13 +145,12 @@ class SherpaSession(object):
                                                           model_info["file"].strip())
 
                         if (model_type == "template"):
-                            # Template model fits can only be done with
-                            # grid search
+                            # Template model fits can be done with continuous optimization methods in Sherpa >4.6
                             self.session.load_template_model(model_name,
                                                              model_info["file"].strip())
-                            self.session.set_method("gridsearch")
-                            tempmdl = self.session.get_model_component(model_name)
-                            self.session.set_method_opt("sequence", tempmdl.parvals)
+                            #self.session.set_method("gridsearch")
+                            #tempmdl = self.session.get_model_component(model_name)
+                            #self.session.set_method_opt("sequence", tempmdl.parvals)
                         
                         if (model_type == "usermodel"):
                             # user_model_ref set by code in user model
