@@ -144,7 +144,7 @@ class SherpaSession(object):
                             self.session.load_table_model(model_name,
                                                           model_info["file"].strip())
 
-                        if (model_type == "templatemodel"):
+                        if (model_type == "template"):
                             # Template model fits can only be done with
                             # grid search
                             self.session.load_template_model(model_name,
