@@ -43,11 +43,13 @@ from sherpa_samp.interpolation import interp1d
 
 import logging
 
+from sherpa_samp.log import logfile
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
                    format='[SHERPA] %(levelname)-8s %(asctime)s %(message)s',
                    datefmt='%a, %d %b %Y %H:%M:%S',
-                   filename='SAMPSherpa.log', # FIXME: user permissions!
+                   filename=logfile, # FIXME: user permissions!
                    filemode='w')
 
 info = logger.info
