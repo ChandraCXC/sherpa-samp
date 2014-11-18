@@ -42,12 +42,17 @@ class Sed(astSed):
         the parent class's constructor. Otherwise, the wavelength and flux are 
         shifted to the rest frame and passed to the parent's constructor along with z
         """
-        if z==0.0:
+        wavelength = array(wavelength)
+        flux = array(flux)
+        
+	si = wavelength.argsort()
+	wavelength.sort()
+	flux = flux[si]
+
+	if z==0.0:
             astSed.__init__(self, wavelength, flux)
             return
         
-        wavelength = array(wavelength)
-        flux = array(flux)
         
         wavelength_z0 = wavelength/(1+z)
         
