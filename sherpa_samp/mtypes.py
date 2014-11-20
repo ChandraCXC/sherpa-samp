@@ -35,7 +35,9 @@ from sherpa_samp.sed import Sed
 from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
-from sedstacker import normalize
+from sherpa_samp.sedstacker_iris.sed import normalize
+from sedstacker.iris.sed import IrisSed, IrisStack
+from sedstacker.sed import Sed, Stack, stack
 
 #
 ## Logging
@@ -111,7 +113,7 @@ def reply_error(msg_id, exception, e, mtype):
 
 def notify(mtype, msg):
     cli.enotifyAll(mtype, message = msg)
-    
+
     #cli.notify
 
 
@@ -151,7 +153,7 @@ def load_table_votable(private_key, sender_id, msg_id, mtype, params, extra):
         info("load_table_votable()")
 
         try:
-            
+
             pass
 
         except Exception, e:
@@ -395,7 +397,7 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
 
         try:
             ui.set_model(params["models"])
-            
+
         except Exception, e:
             reply_error(msg_id, sedexceptions.ModelException, e, mtype)
             return
@@ -435,7 +437,7 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
                     errq.put( (msg, trace) )
                     outq.put(None)
 
-            fit_task = multiprocessing.Process(target=worker, args=(ui,))       
+            fit_task = multiprocessing.Process(target=worker, args=(ui,))
 
             global _fitting_tasks
             _fitting_tasks.append((fit_task, msg_id, mtype))
@@ -562,7 +564,7 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             return
 
         results = None
-        
+
         try:
 
             #ui.set_confidence(params["confidence"])
@@ -572,7 +574,7 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
             #logger = logging.getLogger('sherpa')
             #logger.setLevel(logging.INFO)
             #logger.addHandler(handler)
-            
+
             #ui.run_confidence(params["confidence"])
 
             #logger.removeHandler(handler)
@@ -796,7 +798,7 @@ def spectrum_fit_calc_statistic_values(private_key, sender_id, msg_id, mtype,
             if (params.has_key("usermodels")):
                 usermodels = params["usermodels"]
             ui.set_parameters(params["models"], usermodels)
-            
+
         except Exception, e:
             reply_error(msg_id, sedexceptions.ParameterException, e, mtype)
             return
@@ -849,7 +851,7 @@ def spectrum_fit_calc_model_values(private_key, sender_id, msg_id, mtype,
     try:
         info("spectrum_fit_calc_model_values()")
         ui = SherpaSession()
-        
+
         try:
             ui.set_data(params["datasets"])
 
@@ -975,22 +977,22 @@ def spectrum_redshift_calc(private_key, sender_id, msg_id, mtype, params,
             y = decode_string(payload.y)
             from_redshift = float(payload.from_redshift)
             to_redshift = float(payload.to_redshift)
-            
+
             sed = Sed(x, y, from_redshift)
             sed.redshift(to_redshift)
-            
+
             payload.x = encode_string(sed.wavelength)
             payload.y = encode_string(sed.flux)
-            
+
             reply_success(msg_id, mtype, payload)
-            
+
         except Exception, e:
             reply_error(msg_id, sedexceptions.SEDException, e, mtype)
             return
 
     except Exception:
         error(str(capture_exception()))
-        
+
 def spectrum_integrate(private_key, sender_id, msg_id, mtype, params,
                                       extra):
     """
@@ -1003,15 +1005,15 @@ def spectrum_integrate(private_key, sender_id, msg_id, mtype, params,
         info("spectrum_integrate()")
         try:
             payload = DictionaryClass(params)
-            
+
             x = decode_string(payload.x)
             y = decode_string(payload.y)
-            
+
             sed = Sed(x, y)
-            
+
             response = dict()
             response['points'] = list()
-            
+
             for curve in payload.curves:
                 pb = Passband(curve.file_name)
                 flux = sed.calcFlux(pb)
@@ -1020,7 +1022,7 @@ def spectrum_integrate(private_key, sender_id, msg_id, mtype, params,
                 point['wavelength'] = curve.eff_wave
                 point['flux'] = str(flux)
                 response['points'].append(point)
-                
+
             for window in payload.windows:
                 xmin = float(window.min)
                 xmax = float(window.max)
@@ -1030,9 +1032,9 @@ def spectrum_integrate(private_key, sender_id, msg_id, mtype, params,
                 point['wavelength'] = str((xmax+xmin)/2)
                 point['flux'] = str(flux)
                 response['points'].append(point)
-            
+
             reply_success(msg_id, mtype, response)
-            
+
         except Exception, e:
             reply_error(msg_id, sedexceptions.SEDException, e, mtype)
             return
@@ -1048,7 +1050,7 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
 
 
     """
-    
+
     try:
         info("spectrum_interpolate()")
         try:
@@ -1065,9 +1067,9 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
             method = methods[payload.method]
             info("method " + method.__name__)
             n_bins = int(payload.n_bins)
-            
+
             log = payload.log=='true';
-            
+
             sed = Sed(x, y)
             newSed = sed.interpolate(method, (x_min, x_max), n_bins, log);
 
@@ -1083,13 +1085,13 @@ def spectrum_interpolate(private_key, sender_id, msg_id, mtype, params,
                 if not filtered:
                     newSed = filter(newSed)
                 newSed.normalise()
-            
+
             payload.x = encode_string(newSed.wavelength)
             payload.y = encode_string(newSed.flux)
-            
+
             reply_success(msg_id, mtype, payload)
             info("success")
-            
+
         except Exception, e:
             reply_error(msg_id, sedexceptions.SEDException, e, mtype)
             error("error: " + repr(e))
@@ -1113,26 +1115,23 @@ def stack_redshift(private_key, sender_id, msg_id, mtype, params,
         info("stack_redshift()")
         try:
             payload = DictionaryClass(params)
-            xs = decode_string(payload.x)
-            ys = decode_string(payload.y)
-            yerrs = decode_string(payload.yerr)
-            from_redshift = decode_string(payload.from_redshift)
-            to_redshift = float(payload.z)
-            correct_flux = bool(payload.correct_flux)
-
             seds = []
+            for segment in payload.segments:
+                x = decode_string(segment.x)
+                y = decode_string(segment.y)
+                yerr = decode_string(segment.yerr)
+                from_redshift = float(segment.redshift)
+                seds.append(IrisSed(x=x, y=y, yerr=yerr, z=from_redshift))
+            to_redshift = float(payload.to_redshift)
+            correct_flux = payload.correct_flux == "true"
 
-            for i in range(len(xs)):
-                x = xs[i]
-                y = ys[i]
-                yerr = yerrs[i]
-                z = from_redshift[i]
-                seds.append(Sed(x=x,y=y,yerr=yerr,z=z))
+            result = IrisStack(seds).shift(to_redshift, correct_flux=correct_flux)
 
-            result = Stack(seds).shift(to_redshift, correct_flux=correct_flux)
-            payload.x = encode_string(result.x)
-            payload.y = encode_string(result.y)
-            payload.yerr = encode_string(result.yerr)
+            for i, segment in enumerate(payload.segments):
+                segment.x = encode_string(result[i].x)
+                segment.y = encode_string(result[i].y)
+                segment.yerr = encode_string(result[i].yerr)
+                segment.redshift = float(result[i].z)
 
             reply_success(msg_id, mtype, payload)
 
@@ -1149,26 +1148,20 @@ def stack_normalize(private_key, sender_id, msg_id, mtype, params,
         info("stack_normalize()")
         try:
             payload = DictionaryClass(params)
-            xs = decode_string(payload.x)
-            ys = decode_string(payload.y)
-            yerrs = decode_string(payload.yerr)
-
             seds = []
-
-            for i in range(len(xs)):
-                x = xs[i]
-                y = ys[i]
-                yerr = yerrs[i]
-                seds.append(Sed(x=x,y=y,yerr=yerr))
-
-            stack = Stack(seds)
+            for segment in payload.segments:
+                x = decode_string(segment.x)
+                y = decode_string(segment.y)
+                yerr = decode_string(segment.yerr)
+                seds.append(IrisSed(x=x, y=y, yerr=yerr))
+            stack = IrisStack(seds)
 
             result = normalize(stack, payload)
-
-            payload.x = encode_string(result.x)
-            payload.y = encode_string(result.y)
-            payload.yerr = encode_string(result.yerr)
-            payload.norm_constant = result.norm_constant
+            for segment in payload.segments:
+                segment.x = encode_string(segment.x)
+                segment.y = encode_string(segment.y)
+                segment.yerr = encode_string(segment.yerr)
+                segment.norm_constant = encode_string(result.norm_constant)
 
             reply_success(msg_id, mtype, payload)
 
@@ -1185,9 +1178,13 @@ def stack_stack(private_key, sender_id, msg_id, mtype, params,
         info("stack_stack()")
         try:
             payload = DictionaryClass(params)
-            xs = decode_string(payload.x)
-            ys = decode_string(payload.y)
-            yerrs = decode_string(payload.yerr)
+            seds = []
+            for segment in payload.segments:
+                x = decode_string(segment.x)
+                y = decode_string(segment.y)
+                yerr = decode_string(segment.yerr)
+                seds.append(IrisSed(x=x, y=y, yerr=yerr))
+            stack = IrisStack(seds)
 
             binsize = decode_string(payload.binsize)
             statistic = str(payload.statistic)
@@ -1195,19 +1192,11 @@ def stack_stack(private_key, sender_id, msg_id, mtype, params,
             smooth_binsize = payload.smooth_binsize
             logbin = payload.logbin
 
-            seds = []
-
-            for i in range(len(xs)):
-                x = xs[i]
-                y = ys[i]
-                yerr = yerrs[i]
-                seds.append(Sed(x=x,y=y,yerr=yerr,z=z))
-
             result = stack(Stack(seds), binsize, statistic, fill='remove', smooth=smooth, snooth_binsize=smooth_binsize, logbin=logbin)
-            payload.x = encode_string(result.x)
-            payload.y = encode_string(result.y)
-            payload.yerr = encode_string(result.yerr)
-            payload.counts = encode_string(result.counts)
+            payload.segments.x = encode_string(result.x)
+            payload.segments.y = encode_string(result.y)
+            payload.segments.yerr = encode_string(result.yerr)
+            payload.segments.counts = encode_string(result.counts)
 
             reply_success(msg_id, mtype, payload)
 
