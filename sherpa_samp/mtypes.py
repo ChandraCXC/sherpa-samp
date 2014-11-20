@@ -31,13 +31,13 @@ import sherpa_samp.sedexceptions as sedexceptions
 import numpy as np
 from sherpa_samp.session import SherpaSession, check_for_nans
 from sherpa_samp.utils import encode_string, decode_string, capture_exception, DictionaryClass
-from sherpa_samp.sed import Sed
+# from sherpa_samp.sed import Sed
 from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
 from sherpa_samp.sedstacker_iris.sed import normalize
 from sedstacker.iris.sed import IrisSed, IrisStack
-from sedstacker.sed import Sed, Stack, stack
+from sedstacker.sed import Sed, Stack
 
 #
 ## Logging
@@ -1157,11 +1157,11 @@ def stack_normalize(private_key, sender_id, msg_id, mtype, params,
             stack = IrisStack(seds)
 
             result = normalize(stack, payload)
-            for segment in payload.segments:
-                segment.x = encode_string(segment.x)
-                segment.y = encode_string(segment.y)
-                segment.yerr = encode_string(segment.yerr)
-                segment.norm_constant = encode_string(result.norm_constant)
+            for i, segment in enumerate(payload.segments):
+                segment.x = encode_string(result[i].x)
+                segment.y = encode_string(result[i].y)
+                segment.yerr = encode_string(result[i].yerr)
+                segment.norm_constant = str(result[i].norm_constant)
 
             reply_success(msg_id, mtype, payload)
 
