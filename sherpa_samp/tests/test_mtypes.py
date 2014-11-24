@@ -28,6 +28,7 @@ import thread
 import sherpa_samp.mtypes
 import sherpa.all
 import sherpa.astro.all
+from sherpa_samp.utils import DictionaryClass
 
 
 _max  = numpy.finfo(numpy.float32).max
@@ -364,6 +365,35 @@ class MTypeTester(unittest.TestCase):
 
         self._test_tablemodel()
         self._test_usermodel()
+
+    def test_convert_underscores_to_hyphens(self):
+        params = {}
+        segment1 = {'x': [], 'y': [], 'yerr': [], 'norm_constant': 1.0}
+        segment2 = {'x': [], 'y': [], 'yerr': [], 'norm_constant': 1.0}
+        segment3 = {'x': [], 'y': [], 'yerr': [], 'norm_constant': 1.0}
+        params['segments'] = [segment1, segment2, segment3]
+        params['norm_operator'] = '0'
+        params['y0'] = '1.0'
+        params['xmin'] = 'min'
+        params['xmax'] = 'max'
+        params['stats'] = 'avg'
+        params['integrate'] = 'true'
+
+        payload = DictionaryClass(params)
+        for keys in payload.get_dict().keys():
+            if set(keys) & set("_"):
+                self.fail("Found a '_' in '%s' key." %keys)
+
+        segments = payload.get_dict()['segments']
+        for seg in segments:
+            # for key in seg.__dict__.keys():
+            for key in seg.keys():
+                print key
+                if set(key) & set("_"):
+                    self.fail("Found a '_' in '%s' key." %key)
+
+        self.assertEqual(len(payload.__dict__.keys()), 7)
+        self.assertEquals(len(segments), 3)
         
     def test_spectrum_redshift_calc(self):
         pass
