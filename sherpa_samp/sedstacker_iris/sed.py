@@ -9,36 +9,29 @@ logger.addHandler(hndlr)
 
 
 def normalize(stack, payload):
-    norm_operator = payload.norm_operator
+    norm_operator = int(payload.norm_operator)
     # correct_flux = payload.correct_flux
     correct_flux = False
     # z0 = payload.z0
     z0 = None
-    y0 = payload.y0
+    y0 = float(payload.y0)
     stats = payload.stats
 
-
-    if not payload.integrate:
-        try:
-            x0 = payload.x0
-            norm_stack = stack.normalize_at_point(x0, y0, norm_operator=norm_operator, stats=stats,
-                                                  correct_flux=correct_flux, z0=z0)
-            return norm_stack
-        except Exception, ex:
-            logger.warning(ex)
-            return None
+    if payload.integrate != 'true':
+        x0 = float(payload.x0)
+        norm_stack = stack.normalize_at_point(x0, y0, norm_operator=norm_operator, stats=stats,
+                                              correct_flux=correct_flux, z0=z0)
+        return norm_stack
     else:
-        try:
-            min_wave = payload.xmin
-            max_wave = payload.xmax
-            if isinstance(min_wave, basestring):
-                min_wave = min_wave.lower()
-            if isinstance(max_wave, basestring):
-                max_wave = max_wave.lower()
-            norm_stack = stack.normalize_by_int(minWavelength=min_wave, maxWavelength=max_wave, stats=stats,
-                                                y0=y0, norm_operator=norm_operator, correct_flux=correct_flux,
-                                                z0=z0)
-            return norm_stack
-        except Exception, ex:
-            logger.warning(ex)
-            return None
+        if payload.xmin.lower() != 'min':
+            minWavelength = float(payload.xmin)
+        else:
+            minWavelength = payload.xmin.lower()
+        if payload.xmax.lower() != 'max':
+            maxWavelength = float(payload.xmax)
+        else:
+            maxWavelength = payload.xmax.lower()
+        norm_stack = stack.normalize_by_int(minWavelength=minWavelength, maxWavelength=maxWavelength, stats=stats,
+                                            y0=y0, norm_operator=norm_operator, correct_flux=correct_flux,
+                                            z0=z0)
+        return norm_stack

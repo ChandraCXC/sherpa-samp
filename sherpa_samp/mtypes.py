@@ -1163,7 +1163,7 @@ def stack_normalize(private_key, sender_id, msg_id, mtype, params,
                 segment.yerr = encode_string(result[i].yerr)
                 segment.norm_constant = str(result[i].norm_constant)
 
-            reply_success(msg_id, mtype, payload)
+            reply_success(msg_id, mtype, payload.get_dict())
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.SEDException, e, mtype)
