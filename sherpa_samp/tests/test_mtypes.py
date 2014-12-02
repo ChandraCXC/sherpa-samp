@@ -386,9 +386,7 @@ class MTypeTester(unittest.TestCase):
 
         segments = payload.get_dict()['segments']
         for seg in segments:
-            # for key in seg.__dict__.keys():
             for key in seg.keys():
-                print key
                 if set(key) & set("_"):
                     self.fail("Found a '_' in '%s' key." %key)
 

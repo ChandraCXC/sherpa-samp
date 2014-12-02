@@ -35,7 +35,7 @@ from sherpa_samp.utils import encode_string, decode_string, capture_exception, D
 from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
-from sherpa_samp.sedstacker_iris.sed import normalize
+from sherpa_samp.sedstacker_iris.sed import normalize, redshift
 from sedstacker.iris.sed import IrisSed, IrisStack
 from sedstacker.sed import Sed, Stack
 
@@ -50,7 +50,8 @@ logging.basicConfig(level=logging.INFO,
                    format='[SHERPA] %(levelname)-8s %(asctime)s %(message)s',
                    datefmt='%a, %d %b %Y %H:%M:%S',
                    filename='SAMPSherpa.log', # FIXME: user permissions!
-                   filemode='w')
+                   filemode='w',
+                   )
 
 info = logger.info
 warn = logger.warning
@@ -100,7 +101,7 @@ def reply_error(msg_id, exception, e, mtype):
 
     error(errtrace)
     cli.reply(msg_id, {"samp.status": samp.SAMP_STATUS_ERROR,
-#    cli.reply(msg_id, {"samp.status": "samp.notok",
+    #cli.reply(msg_id, {"samp.status": "samp.notok",
                        "samp.result": {"exception": str(exception.__name__),
                                        "message": str(e) #str(errtrace)
                                        },
@@ -1120,20 +1121,19 @@ def stack_redshift(private_key, sender_id, msg_id, mtype, params,
                 x = decode_string(segment.x)
                 y = decode_string(segment.y)
                 yerr = decode_string(segment.yerr)
-                from_redshift = float(segment.redshift)
-                seds.append(IrisSed(x=x, y=y, yerr=yerr, z=from_redshift))
-            to_redshift = float(payload.to_redshift)
+                z = float(segment.z)
+                seds.append(IrisSed(x=x, y=y, yerr=yerr, z=z))
+            z0 = float(payload.z0)
             correct_flux = payload.correct_flux == "true"
 
-            result = IrisStack(seds).shift(to_redshift, correct_flux=correct_flux)
+            result = redshift(IrisStack(seds), z0, correct_flux)
 
             for i, segment in enumerate(payload.segments):
                 segment.x = encode_string(result[i].x)
                 segment.y = encode_string(result[i].y)
                 segment.yerr = encode_string(result[i].yerr)
-                segment.redshift = float(result[i].z)
 
-            reply_success(msg_id, mtype, payload)
+            reply_success(msg_id, mtype, payload.get_dict())
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.SEDException, e, mtype)
