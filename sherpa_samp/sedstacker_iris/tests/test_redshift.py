@@ -55,6 +55,19 @@ MTYPE_STACK_REDSHIFT = "stack.redshift"
 
 class TestRedshift(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.hub = samp.SAMPHubServer()
+        cls.hub.start()
+
+        time.sleep(5)
+
+        thread.start_new_thread(mtypes.main, ())
+        cls.cli = samp.SAMPIntegratedClient()
+        cls.cli.connect()
+
+        time.sleep(5)
+
     def test_redshift_no_correct_flux(self):
 
         length1 = numpy.arange(1000,10000,10).size
@@ -217,30 +230,18 @@ class TestRedshift(unittest.TestCase):
         self.assertAlmostEqual(float(decode_string(shifted_stack[1]['x'])[1]), 1500.0)
         self.assertAlmostEqual(float(decode_string(shifted_stack[2]['x'])[1]), 1666.6666667)
 
-
-    def setUp(self):
-        self.hub = samp.SAMPHubServer()
-        self.hub.start()
-
-        time.sleep(5)
-
-        thread.start_new_thread(mtypes.main, ())
-        self.cli = samp.SAMPIntegratedClient()
-        self.cli.connect()
-
-        time.sleep(5)
-
-    def tearDown(self):
-        #mtypes.stop()
+    @classmethod
+    def tearDownClass(cls):
+        mtypes.stop()
 
         time.sleep(1)
 
-        if self.cli is not None and self.cli.isConnected():
-            self.cli.disconnect()
+        if cls.cli is not None and cls.cli.isConnected():
+            cls.cli.disconnect()
 
         time.sleep(1)
 
-        self.hub.stop()
+        cls.hub.stop()
 
 
 if __name__ == '__main__':

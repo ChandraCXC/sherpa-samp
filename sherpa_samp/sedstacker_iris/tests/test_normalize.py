@@ -231,29 +231,31 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(decode_string(norm_stack.segments[1].y), (8/3.)/3.0*decode_string(y2))
         self.assertAlmostEqual(float(norm_stack.segments[2].norm_constant), (8/3.)/4.5)
 
-    def setUp(self):
-        self.hub = samp.SAMPHubServer()
-        self.hub.start()
+    @classmethod
+    def setUpClass(cls):
+        cls.hub = samp.SAMPHubServer()
+        cls.hub.start()
 
         time.sleep(5)
 
         thread.start_new_thread(mtypes.main, ())
-        self.cli = samp.SAMPIntegratedClient()
-        self.cli.connect()
+        cls.cli = samp.SAMPIntegratedClient()
+        cls.cli.connect()
 
         time.sleep(5)
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         mtypes.stop()
 
         time.sleep(1)
 
-        if self.cli is not None and self.cli.isConnected():
-            self.cli.disconnect()
+        if cls.cli is not None and cls.cli.isConnected():
+            cls.cli.disconnect()
 
         time.sleep(1)
 
-        self.hub.stop()
+        cls.hub.stop()
 
 
 if __name__ == '__main__':

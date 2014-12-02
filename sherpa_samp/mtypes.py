@@ -50,8 +50,7 @@ logging.basicConfig(level=logging.INFO,
                    format='[SHERPA] %(levelname)-8s %(asctime)s %(message)s',
                    datefmt='%a, %d %b %Y %H:%M:%S',
                    filename='SAMPSherpa.log', # FIXME: user permissions!
-                   filemode='w',
-                   )
+                   filemode='w')
 
 info = logger.info
 warn = logger.warning
