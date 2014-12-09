@@ -35,9 +35,10 @@ from sherpa_samp.utils import encode_string, decode_string, capture_exception, D
 from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
-from sherpa_samp.sedstacker_iris.sed import normalize, redshift
+from sherpa_samp.sedstacker_iris.sed import normalize, redshift, stack
 from sedstacker.iris.sed import IrisSed, IrisStack
 from sedstacker.sed import Sed, Stack
+import sedstacker.sed
 
 #
 ## Logging
@@ -50,7 +51,7 @@ logging.basicConfig(level=logging.INFO,
                    format='[SHERPA] %(levelname)-8s %(asctime)s %(message)s',
                    datefmt='%a, %d %b %Y %H:%M:%S',
                    filename='SAMPSherpa.log', # FIXME: user permissions!
-                   filemode='w')
+                   filemode='a')
 
 info = logger.info
 warn = logger.warning
@@ -97,8 +98,8 @@ def reply_success(msg_id, mtype, params={}):
 def reply_error(msg_id, exception, e, mtype):
 
     errtrace = capture_exception()
-
-    error(errtrace)
+    logger.exception(e)
+    #error(errtrace)
     cli.reply(msg_id, {"samp.status": samp.SAMP_STATUS_ERROR,
     #cli.reply(msg_id, {"samp.status": "samp.notok",
                        "samp.result": {"exception": str(exception.__name__),
@@ -1183,21 +1184,23 @@ def stack_stack(private_key, sender_id, msg_id, mtype, params,
                 y = decode_string(segment.y)
                 yerr = decode_string(segment.yerr)
                 seds.append(IrisSed(x=x, y=y, yerr=yerr))
-            stack = IrisStack(seds)
+            i_stack = IrisStack(seds)
 
-            binsize = decode_string(payload.binsize)
+            binsize = float(payload.binsize)
             statistic = str(payload.statistic)
-            smooth = bool(payload.smooth)
-            smooth_binsize = payload.smooth_binsize
-            logbin = payload.logbin
+            smooth = payload.smooth == "true"
+            smooth_binsize = float(payload.smooth_binsize)
+            logbin = payload.log_bin == "true"
 
-            result = stack(Stack(seds), binsize, statistic, fill='remove', smooth=smooth, snooth_binsize=smooth_binsize, logbin=logbin)
-            payload.segments.x = encode_string(result.x)
-            payload.segments.y = encode_string(result.y)
-            payload.segments.yerr = encode_string(result.yerr)
-            payload.segments.counts = encode_string(result.counts)
+            result = sedstacker.sed.stack(i_stack, binsize, statistic, fill='remove', smooth=smooth, smooth_binsize=smooth_binsize, logbin=logbin)
 
-            reply_success(msg_id, mtype, payload)
+            payload.segments[0].x = encode_string(result.x)
+            payload.segments[0].y = encode_string(result.y)
+            payload.segments[0].yerr = encode_string(result.yerr)
+            payload.segments[0].counts = encode_string(result.counts)
+            payload.segments = [payload.segments[0]]
+            get_dict = payload.get_dict()
+            reply_success(msg_id, mtype, payload.get_dict())
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.SEDException, e, mtype)

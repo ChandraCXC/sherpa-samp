@@ -18,13 +18,9 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-import logging
 import numpy
+import sedstacker
 
-logger = logging.getLogger(__name__)
-formatter = logging.Formatter('%(levelname)s:%(message)s')
-hndlr = logging.StreamHandler()
-logger.addHandler(hndlr)
 
 
 def normalize(stack, payload):
@@ -65,3 +61,11 @@ def redshift(stack, z0, correct_flux):
     shifted_stack = stack.shift(z0, correct_flux=correct_flux)
 
     return shifted_stack
+
+
+def stack(stack, binsize, statistic, smooth, smooth_binsize, logbin):
+    stacked_sed = sedstacker.sed.stack(stack, binsize, statistic,
+                                       fill='remove', smooth=smooth,
+                                       smooth_binsize=smooth_binsize,
+                                       logbin=logbin)
+    return stacked_sed
