@@ -74,7 +74,7 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params['segments'] = [segment1, segment2, segment3]
 
-        params['norm_operator'] = '0'
+        params['norm-operator'] = '0'
         params['y0'] = '1.0'
         params['xmin'] = 'min'
         params['xmax'] = 'max'
@@ -119,7 +119,7 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params['segments'] = [segment1, segment2, segment3]
 
-        params['norm_operator'] = '0';
+        params['norm-operator'] = '0'
         params['y0'] = '1.0'
         params['xmin'] = 'min'
         params['xmax'] = 'max'
@@ -164,7 +164,7 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params['segments'] = [segment1, segment2, segment3]
 
-        params['norm_operator'] = '1';
+        params['norm-operator'] = '1'
         params['y0'] = '1.0'
         params['xmin'] = 'min'
         params['xmax'] = 'max'
@@ -209,7 +209,7 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params['segments'] = [segment1, segment2, segment3]
 
-        params['norm_operator'] = '0';
+        params['norm-operator'] = '0'
         params['y0'] = '1.0'
         params['x0'] = '5.0'
         params['stats'] = 'avg'

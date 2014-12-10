@@ -51,7 +51,7 @@ class TestStack(unittest.TestCase):
     yerr = 0.1*y
     z = 0.5
 
-    def test_stack_avg(self):
+    def test_stack_wavg(self):
 
         seg1 = {'x': encode_string(self.x), 'y': encode_string(self.y), 'yerr': encode_string(self.yerr), 'z': str(self.z)}
         seg2 = {'x': encode_string(self.x), 'y': encode_string(self.y), 'yerr': encode_string(self.yerr), 'z': str(self.z)}
@@ -65,8 +65,8 @@ class TestStack(unittest.TestCase):
         params['segments'] = [seg1, seg2, seg3, seg4, seg5, seg6]
         params['binsize'] = str(self.x[1] - self.x[0])
         params['statistic'] = 'wavg'
-        params['smooth_binsize'] = '5'
-        params['log_bin'] = 'false'
+        params['smooth-binsize'] = '5'
+        params['log-bin'] = 'false'
         params['smooth'] = 'false'
 
         start = time.clock()
@@ -86,7 +86,40 @@ class TestStack(unittest.TestCase):
         self.assertEqual(decode_string(stacked_seds[0]['counts'])[0], 6)
         self.assertEqual(len(stacked_seds), 1)
 
-    # def test_stack_user_defined_func(self):
+    def test_stack_wavg_40(self):
+
+        segments = []
+        for i in range(40):
+            seg = {'x': encode_string(self.x), 'y': encode_string(self.y), 'yerr': encode_string(self.yerr), 'z': str(self.z)}
+            segments.append(seg)
+
+        params = {}
+
+        params['segments'] = segments
+        params['binsize'] = str(self.x[1] - self.x[0])
+        params['statistic'] = 'wavg'
+        params['smooth-binsize'] = '5'
+        params['log-bin'] = 'false'
+        params['smooth'] = 'false'
+
+        start = time.clock()
+        response = self.cli.callAndWait(
+            mtypes.cli.getPublicId(),
+            {'samp.mtype': MTYPE_STACK_STACK,
+             'samp.params': params},
+            "10")
+        end = time.clock()
+        print 'Time to run SAMP function: ', str(end-start)
+
+        assert response['samp.status'] == 'samp.ok'
+
+        stacked_seds = response['samp.result']['segments']
+
+        self.assertEqual(decode_string(stacked_seds[0]['yerr'])[3], sqrt((self.yerr[3]**2)*40))
+        numpy.testing.assert_array_almost_equal(decode_string(stacked_seds[0]['y']), self.y, decimal=6)
+        self.assertEqual(decode_string(stacked_seds[0]['counts'])[0], 40)
+
+        # def test_stack_user_defined_func(self):
     #
     #     seg1 = {'x': encode_string(self.x), 'y': encode_string(self.y), 'yerr': encode_string(self.yerr), 'z': str(self.z)}
     #     seg2 = {'x': encode_string(self.x), 'y': encode_string(self.y), 'yerr': encode_string(self.yerr), 'z': str(self.z)}
@@ -99,9 +132,9 @@ class TestStack(unittest.TestCase):
     #
     #     params['segments'] = [seg1, seg2, seg3, seg4, seg5, seg6]
     #     params['binsize'] = str(self.x[1] - self.x[0])
-    #     params['statistic'] = 'wavg'
-    #     params['smooth_binsize'] = '5'
-    #     params['log_bin'] = 'false'
+    #     params['statistic'] = 'my_wavg'
+    #     params['smooth-binsize'] = '5'
+    #     params['log-bin'] = 'false'
     #     params['smooth'] = 'false'
     #
     #     start = time.clock()
@@ -121,39 +154,6 @@ class TestStack(unittest.TestCase):
     #     numpy.testing.assert_array_almost_equal(decode_string(stacked_seds[0]['y']), self.y, decimal=6)
     #     self.assertEqual(decode_string(stacked_seds[0]['counts'])[0], 6)
     #     self.assertEqual(len(stacked_seds), 1)
-
-    def test_stack_avg_40(self):
-
-        segments = []
-        for i in range(40):
-            seg = {'x': encode_string(self.x), 'y': encode_string(self.y), 'yerr': encode_string(self.yerr), 'z': str(self.z)}
-            segments.append(seg)
-
-        params = {}
-
-        params['segments'] = segments
-        params['binsize'] = str(self.x[1] - self.x[0])
-        params['statistic'] = 'wavg'
-        params['smooth_binsize'] = '5'
-        params['log_bin'] = 'false'
-        params['smooth'] = 'false'
-
-        start = time.clock()
-        response = self.cli.callAndWait(
-            mtypes.cli.getPublicId(),
-            {'samp.mtype': MTYPE_STACK_STACK,
-             'samp.params': params},
-            "10")
-        end = time.clock()
-        print 'Time to run SAMP function: ', str(end-start)
-
-        assert response['samp.status'] == 'samp.ok'
-
-        stacked_seds = response['samp.result']['segments']
-
-        self.assertEqual(decode_string(stacked_seds[0]['yerr'])[3], sqrt((self.yerr[3]**2)*40))
-        numpy.testing.assert_array_almost_equal(decode_string(stacked_seds[0]['y']), self.y, decimal=6)
-        self.assertEqual(decode_string(stacked_seds[0]['counts'])[0], 40)
 
 
     @classmethod
