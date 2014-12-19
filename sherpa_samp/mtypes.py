@@ -37,7 +37,7 @@ from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
 from sherpa_samp.sedstacker_iris.sed import normalize, redshift, stack
 from sedstacker.iris.sed import IrisSed, IrisStack
-from sedstacker.sed import Sed, Stack
+from sherpa_samp.sed import Sed
 import sedstacker.sed
 
 #
