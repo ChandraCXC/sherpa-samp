@@ -17,7 +17,7 @@
 #  with this program; if not, write to the Free Software Foundation, Inc.,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-
+from httplib import CannotSendRequest, ResponseNotReady
 
 import sys
 import time
@@ -1005,12 +1005,12 @@ def spectrum_integrate(private_key, sender_id, msg_id, mtype, params,
         info("spectrum_integrate()")
         try:
             payload = DictionaryClass(params)
-            
+
             x = decode_string(payload.x)
             y = decode_string(payload.y)
-            
+
             sed = Sed(x, y)
-            
+
             response = dict()
             response['points'] = list()
             
@@ -1185,7 +1185,10 @@ def main():
             connected = True
             try:
                 cli.hub.ping()
-            except:
+            except (CannotSendRequest, ResponseNotReady):
+                continue
+            except Exception, e:
+                logging.exception(e)
                 connected = False
             if not connected:
                 cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
@@ -1194,6 +1197,8 @@ def main():
                     register()
                 except samp.SAMPHubError:
                     continue
+    except Exception, e:
+        logging.exception(e)
     finally:
         if cli is not None and cli.isConnected():
             cli.disconnect()
