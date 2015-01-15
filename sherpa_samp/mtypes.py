@@ -1209,6 +1209,13 @@ def main():
                 if time.time() > last_ping + 30:
                     info("giving up")
                     raise Exception("Ping timeout")
+            if not cli.isConnected():
+                try:
+                    cli.connect()
+                    register()
+                except samp.SAMPHubError:
+                    pass
+
     except Exception, e:
         logging.exception(e)
     finally:
