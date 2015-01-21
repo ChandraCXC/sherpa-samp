@@ -231,6 +231,33 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(decode_string(norm_stack.segments[1].y), (8/3.)/3.0*decode_string(y2))
         self.assertAlmostEqual(float(norm_stack.segments[2].norm_constant), (8/3.)/4.5)
 
+    def test_normalize_by_int_outside_range(self):
+
+        params = {}
+        segment1 = {'x': encode_string(numpy.array([1,2,3,4,5])), 'y': encode_string(numpy.array([1,2,3,4,5])), 'yerr': encode_string(numpy.array([1, 5, 10, 15, 50]) * 0.01), 'id': 'sed1'}
+        segment2 = {'x': encode_string(numpy.array([10,20,30,40])), 'y': encode_string(numpy.array([1,2,3,4])), 'yerr': encode_string(numpy.array([1, 5, 10, 15]) * 0.01), 'id': 'sed2'}
+
+        params['segments'] = [segment1, segment2]
+
+        params['norm-operator'] = '0'
+        params['xmin'] = '2.0'
+        params['xmax'] = '9.0'
+        params['stats'] = 'avg'
+        params['integrate'] = 'true'
+        params['y0'] = '1.0'
+
+        response = self.cli.callAndWait(
+            mtypes.cli.getPublicId(),
+            {'samp.mtype': MTYPE_STACK_NORMALIZE,
+             'samp.params': params},
+            "10")
+
+        assert response['samp.status'] == 'samp.ok'
+
+        results = response['samp.result']
+
+        self.assertEqual(results['excludeds'][0], 'sed2')
+
     @classmethod
     def setUpClass(cls):
         cls.hub = samp.SAMPHubServer()

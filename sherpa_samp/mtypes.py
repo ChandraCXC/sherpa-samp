@@ -1122,7 +1122,8 @@ def stack_redshift(private_key, sender_id, msg_id, mtype, params,
                 y = decode_string(segment.y)
                 yerr = decode_string(segment.yerr)
                 z = float(segment.z)
-                seds.append(IrisSed(x=x, y=y, yerr=yerr, z=z))
+                id_ = str(segment.id)
+                seds.append(IrisSed(x=x, y=y, yerr=yerr, z=z, id=id_))
             z0 = float(payload.z0)
             correct_flux = payload.correct_flux == "true"
 
@@ -1132,6 +1133,8 @@ def stack_redshift(private_key, sender_id, msg_id, mtype, params,
                 segment.x = encode_string(result[i].x)
                 segment.y = encode_string(result[i].y)
                 segment.yerr = encode_string(result[i].yerr)
+
+            payload.excludeds = result.excluded
 
             reply_success(msg_id, mtype, payload.get_dict())
 
@@ -1153,7 +1156,8 @@ def stack_normalize(private_key, sender_id, msg_id, mtype, params,
                 x = decode_string(segment.x)
                 y = decode_string(segment.y)
                 yerr = decode_string(segment.yerr)
-                seds.append(IrisSed(x=x, y=y, yerr=yerr))
+                id_ = str(segment.id)
+                seds.append(IrisSed(x=x, y=y, yerr=yerr, id=id_))
             stack = IrisStack(seds)
 
             result = normalize(stack, payload)
@@ -1162,7 +1166,7 @@ def stack_normalize(private_key, sender_id, msg_id, mtype, params,
                 segment.y = encode_string(result[i].y)
                 segment.yerr = encode_string(result[i].yerr)
                 segment.norm_constant = str(result[i].norm_constant)
-
+            payload.excludeds = result.excluded
             reply_success(msg_id, mtype, payload.get_dict())
 
         except Exception, e:

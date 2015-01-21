@@ -55,16 +55,28 @@ MTYPE_STACK_REDSHIFT = "stack.redshift"
 
 class TestRedshift(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.hub = samp.SAMPHubServer()
-        cls.hub.start()
+    # @classmethod
+    # def setUpClass(cls):
+    #     cls.hub = samp.SAMPHubServer()
+    #     cls.hub.start()
+    #
+    #     time.sleep(5)
+    #
+    #     thread.start_new_thread(mtypes.main, ())
+    #     cls.cli = samp.SAMPIntegratedClient()
+    #     cls.cli.connect()
+    #
+    #     time.sleep(5)
+
+    def setUp(self):
+        self.hub = samp.SAMPHubServer()
+        self.hub.start()
 
         time.sleep(5)
 
         thread.start_new_thread(mtypes.main, ())
-        cls.cli = samp.SAMPIntegratedClient()
-        cls.cli.connect()
+        self.cli = samp.SAMPIntegratedClient()
+        self.cli.connect()
 
         time.sleep(5)
 
@@ -126,7 +138,8 @@ class TestRedshift(unittest.TestCase):
         y1 = encode_string(numpy.array([1.3e-11, 2.56e-11, 7.89e-11, 6.5e-11, 1.2e-10]))
         yerr1 = encode_string(numpy.array([1.0e-13, 1.0e-13, 1.0e-13, 1.0e-13, 1e-12]))
         z1 = str(1.65)
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1}
+        id1 = "sed1"
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1, 'id': id1}
 
         x2 = encode_string(numpy.linspace(3000.0, 10000.0, num=10000))
         y2 = encode_string(numpy.linspace(1e-13, 1e-11, num=10000))
@@ -134,13 +147,14 @@ class TestRedshift(unittest.TestCase):
         yerr2[:] = numpy.nan
         yerr2 = encode_string(yerr2)
         z2 = str(1.65)
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'z': z2}
+        id2 = "sed2"
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'z': z2, 'id': id2}
 
         params = {}
 
         params['segments'] = [segment1, segment2]
 
-        params['correct_flux'] = 'true';
+        params['correct_flux'] = 'true'
         params['z0'] = '0.1'
 
         response = self.cli.callAndWait(
@@ -187,6 +201,7 @@ class TestRedshift(unittest.TestCase):
         yerr1[:] = numpy.nan
         yerr1 = encode_string(yerr1)
         z1 = str(1.0)
+        id1 = "sed1"
 
         length2 = numpy.arange(1000,10000,500).size
         x2 = encode_string(numpy.arange(1000,10000,500))
@@ -195,6 +210,7 @@ class TestRedshift(unittest.TestCase):
         yerr2[:] = numpy.nan
         yerr2 = encode_string(yerr2)
         z2 = str(numpy.nan)
+        id2 = "sed2"
 
         x3 = encode_string(numpy.arange(1000,10000,500))
         y3 = encode_string(numpy.arange(1000,10000,500))
@@ -202,12 +218,13 @@ class TestRedshift(unittest.TestCase):
         yerr3[:] = numpy.nan
         yerr3 = encode_string(yerr3)
         z3 = str(0.35)
+        id3 = "sed3"
 
         params = {}
 
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1}
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'z': z2}
-        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'z': z3}
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1, 'id': id1}
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'z': z2, 'id': id2}
+        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'z': z3, 'id': id3}
 
         params['segments'] = [segment1, segment2, segment3]
         params['z0'] = '0.5'
@@ -230,18 +247,29 @@ class TestRedshift(unittest.TestCase):
         self.assertAlmostEqual(float(decode_string(shifted_stack[1]['x'])[1]), 1500.0)
         self.assertAlmostEqual(float(decode_string(shifted_stack[2]['x'])[1]), 1666.6666667)
 
-    @classmethod
-    def tearDownClass(cls):
+    # @classmethod
+    # def tearDownClass(cls):
+    #     mtypes.stop()
+    #
+    #     time.sleep(1)
+    #
+    #     if cls.cli is not None and cls.cli.isConnected():
+    #         cls.cli.disconnect()
+    #
+    #     time.sleep(1)
+    #
+    #     cls.hub.stop()
+    def tearDown(self):
         mtypes.stop()
 
         time.sleep(1)
 
-        if cls.cli is not None and cls.cli.isConnected():
-            cls.cli.disconnect()
+        if self.cli is not None and self.cli.isConnected():
+            self.cli.disconnect()
 
         time.sleep(1)
 
-        cls.hub.stop()
+        self.hub.stop()
 
 
 if __name__ == '__main__':
