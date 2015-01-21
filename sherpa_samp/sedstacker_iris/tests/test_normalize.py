@@ -68,9 +68,9 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params = {}
 
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1}
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2}
-        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3}
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'id': 'sed1'}
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'id': 'sed2'}
+        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'id': 'sed3'}
 
         params['segments'] = [segment1, segment2, segment3]
 
@@ -113,9 +113,9 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params = {}
 
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1}
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2}
-        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3}
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'id': 'sed1'}
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'id': 'sed2'}
+        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'id': 'sed3'}
 
         params['segments'] = [segment1, segment2, segment3]
 
@@ -158,9 +158,9 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params = {}
 
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1}
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2}
-        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3}
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'id': 'sed1'}
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'id': 'sed2'}
+        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'id': 'sed3'}
 
         params['segments'] = [segment1, segment2, segment3]
 
@@ -203,9 +203,9 @@ class TestIrisSedStackerNormalize(unittest.TestCase):
 
         params = {}
 
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1}
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2}
-        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3}
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'id': 'sed1'}
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'id': 'sed2'}
+        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'id': 'sed3'}
 
         params['segments'] = [segment1, segment2, segment3]
 

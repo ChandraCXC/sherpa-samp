@@ -77,11 +77,11 @@ class TestStack(unittest.TestCase):
             "50")
         end = time.clock()
         print 'Time to run SAMP function: ', str(end-start)
-        #assert response['samp.status'] == 'samp.ok'
+        assert response['samp.status'] == 'samp.ok'
 
         stacked_seds = response['samp.result']['segments']
 
-        self.assertEqual(decode_string(stacked_seds[0]['yerr'])[3], sqrt((self.yerr[3]**2)*6))
+        self.assertEqual(decode_string(stacked_seds[0]['yerr'])[3], 1.0/((1.0/self.yerr[3]**2)*6))
         numpy.testing.assert_array_almost_equal(decode_string(stacked_seds[0]['y']), self.y, decimal=6)
         self.assertEqual(decode_string(stacked_seds[0]['counts'])[0], 6)
         self.assertEqual(len(stacked_seds), 1)
@@ -115,7 +115,7 @@ class TestStack(unittest.TestCase):
 
         stacked_seds = response['samp.result']['segments']
 
-        self.assertEqual(decode_string(stacked_seds[0]['yerr'])[3], sqrt((self.yerr[3]**2)*40))
+        self.assertEqual(decode_string(stacked_seds[0]['yerr'])[3], 1.0/((1.0/self.yerr[3]**2)*40))
         numpy.testing.assert_array_almost_equal(decode_string(stacked_seds[0]['y']), self.y, decimal=6)
         self.assertEqual(decode_string(stacked_seds[0]['counts'])[0], 40)
 

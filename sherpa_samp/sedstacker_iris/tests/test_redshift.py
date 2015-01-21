@@ -55,28 +55,16 @@ MTYPE_STACK_REDSHIFT = "stack.redshift"
 
 class TestRedshift(unittest.TestCase):
 
-    # @classmethod
-    # def setUpClass(cls):
-    #     cls.hub = samp.SAMPHubServer()
-    #     cls.hub.start()
-    #
-    #     time.sleep(5)
-    #
-    #     thread.start_new_thread(mtypes.main, ())
-    #     cls.cli = samp.SAMPIntegratedClient()
-    #     cls.cli.connect()
-    #
-    #     time.sleep(5)
-
-    def setUp(self):
-        self.hub = samp.SAMPHubServer()
-        self.hub.start()
+    @classmethod
+    def setUpClass(cls):
+        cls.hub = samp.SAMPHubServer()
+        cls.hub.start()
 
         time.sleep(5)
 
         thread.start_new_thread(mtypes.main, ())
-        self.cli = samp.SAMPIntegratedClient()
-        self.cli.connect()
+        cls.cli = samp.SAMPIntegratedClient()
+        cls.cli.connect()
 
         time.sleep(5)
 
@@ -107,9 +95,9 @@ class TestRedshift(unittest.TestCase):
 
         params = {}
 
-        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1}
-        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'z': z2}
-        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'z': z3}
+        segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1, 'id': 'sed1'}
+        segment2 = {'x': x2, 'y': y2, 'yerr': yerr2, 'z': z2, 'id': 'sed2'}
+        segment3 = {'x': x3, 'y': y3, 'yerr': yerr3, 'z': z3, 'id': 'sed3'}
 
         params['segments'] = [segment1, segment2, segment3]
         params['z0'] = '0.4'
@@ -247,29 +235,18 @@ class TestRedshift(unittest.TestCase):
         self.assertAlmostEqual(float(decode_string(shifted_stack[1]['x'])[1]), 1500.0)
         self.assertAlmostEqual(float(decode_string(shifted_stack[2]['x'])[1]), 1666.6666667)
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     mtypes.stop()
-    #
-    #     time.sleep(1)
-    #
-    #     if cls.cli is not None and cls.cli.isConnected():
-    #         cls.cli.disconnect()
-    #
-    #     time.sleep(1)
-    #
-    #     cls.hub.stop()
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         mtypes.stop()
 
         time.sleep(1)
 
-        if self.cli is not None and self.cli.isConnected():
-            self.cli.disconnect()
+        if cls.cli is not None and cls.cli.isConnected():
+            cls.cli.disconnect()
 
         time.sleep(1)
 
-        self.hub.stop()
+        cls.hub.stop()
 
 
 if __name__ == '__main__':
