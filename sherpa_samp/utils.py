@@ -66,7 +66,7 @@ class DictionaryClass(object):
           elif isinstance(v, list):
             newlist = list()
             for i in range(len(v)):
-                elem = v.pop()
+                elem = v[i]
                 if isinstance(elem, dict):
                     newlist.append(DictionaryClass(elem))
                 else:
@@ -85,8 +85,21 @@ class DictionaryClass(object):
     def get_dict(self):
         resp = {}
         for k,v in self.__dict__.iteritems():
+            k = k.replace("_", "-")
             if isinstance(v, DictionaryClass):
                 resp[k] = v.get_dict()
+            elif isinstance(v, list):
+                resp[k] = v
+                for i, item in enumerate(v):
+                    if isinstance(item, DictionaryClass):
+                        resp[k][i] = item.get_dict()
+                        # for k1, v1 in item.__dict__.iteritems():
+                        #     setattr(resp[k][i], k1, v1)
+                        #     k1_old = k1
+                        #     k1 = k1.replace("_", "-")
+                        #     resp[k][i].__dict__[k1] = resp[k][i].__dict__.pop(k1_old)
+                    else:
+                        resp[k][i] = item
             else:
                 resp[k] = v
         return resp
