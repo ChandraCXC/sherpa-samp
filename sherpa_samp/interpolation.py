@@ -1,4 +1,4 @@
-#  Copyright (C) 2013  Smithsonian Astrophysical Observatory
+#  Copyright (C) 2013, 2015  Smithsonian Astrophysical Observatory
 #
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO,
                    format='[SHERPA] %(levelname)-8s %(asctime)s %(message)s',
                    datefmt='%a, %d %b %Y %H:%M:%S',
                    filename=logfile, # FIXME: user permissions!
-                   filemode='w')
+                   filemode='a')
 
 info = logger.info
 warn = logger.warning
