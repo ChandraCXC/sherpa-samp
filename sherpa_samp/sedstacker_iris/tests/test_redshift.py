@@ -129,9 +129,9 @@ class TestRedshift(unittest.TestCase):
         id1 = "sed1"
         segment1 = {'x': x1, 'y': y1, 'yerr': yerr1, 'z': z1, 'id': id1}
 
-        x2 = encode_string(numpy.linspace(3000.0, 10000.0, num=10000))
-        y2 = encode_string(numpy.linspace(1e-13, 1e-11, num=10000))
-        yerr2 = numpy.empty(10000)
+        x2 = encode_string(numpy.linspace(3000.0, 10000.0, num=1000))
+        y2 = encode_string(numpy.linspace(1e-13, 1e-11, num=1000))
+        yerr2 = numpy.empty(1000)
         yerr2[:] = numpy.nan
         yerr2 = encode_string(yerr2)
         z2 = str(1.65)
