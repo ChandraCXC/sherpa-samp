@@ -188,18 +188,16 @@ class MTypeTester(unittest.TestCase):
                                                   47.262657692418749])
                           }
 
-    def setUp(self):
-        #path = os.getcwd()
-        #lockfilename = os.path.join(path,"samp")
-        #self.hub = samp.SAMPHubServer(lockfile=lockfilename)
-        self.hub = samp.SAMPHubServer()
-        self.hub.start()
+    @classmethod
+    def setUpClass(cls):
+        cls.hub = samp.SAMPHubServer()
+        cls.hub.start()
 
         time.sleep(5)
 
         thread.start_new_thread(sherpa_samp.mtypes.main, ())
-        self.cli = samp.SAMPIntegratedClient()
-        self.cli.connect()
+        cls.cli = samp.SAMPIntegratedClient()
+        cls.cli.connect()
 
         time.sleep(5)
 
@@ -396,17 +394,18 @@ class MTypeTester(unittest.TestCase):
     def test_spectrum_redshift_calc(self):
         pass
         
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         sherpa_samp.mtypes.stop()
 
         time.sleep(1)
 
-        if self.cli is not None and self.cli.isConnected():
-            self.cli.disconnect()
+        if cls.cli is not None and cls.cli.isConnected():
+            cls.cli.disconnect()
 
         time.sleep(1)
 
-        self.hub.stop()
+        cls.hub.stop()
 
 
 if __name__ == '__main__':
