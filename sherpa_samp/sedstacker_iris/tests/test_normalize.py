@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#  Copyright (C) 2011  Smithsonian Astrophysical Observatory
+#  Copyright (C) 2015  Smithsonian Astrophysical Observatory
 #
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@ import thread
 from sherpa_samp.utils import DictionaryClass
 from sherpa_samp import mtypes
 import sampy as samp
-from sedstacker.iris.sed import IrisStack, IrisSed
 import numpy
 
 
