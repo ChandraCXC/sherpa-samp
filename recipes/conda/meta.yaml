@@ -1,25 +1,27 @@
 package:
   name: sherpa-samp
-  version: "0.3.1"
+  version: "1.0"
 
 build:
-  number: "0"
+  number: 1
+
+  preserve_egg_dir: yes
 
 requirements:
-  build:
-   - setuptools
-   - python 2.7.*
-   - numpy
-
   run:
    - setuptools
-   - sherpa
-   - astlib
+   - python 2.7.*
    - scipy
+   - astlib
+   - sherpa
+   - numpy
+   - sampy
+
+  build:
+   - setuptools
+   - python
    - numpy
 
 about:
-  home : https://github.com/ChandraCXC/sherpa-samp
-  summary : samp interface for sherpa
-  license: GPLv3
- 
+  home: https://github.com/ChandraCXC/sherpa-samp.git
+  summary: SAMP interface to Sherpa.   
