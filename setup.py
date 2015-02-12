@@ -22,7 +22,7 @@ import setuptools
 from numpy.distutils.core import setup
 
 setup(name='sherpa_samp',
-      version='0.3.1',
+      version='2.1',
       author='Smithsonian Astrophysical Observatory / Chandra X-Ray Center',
       author_email='cxchelp@head.cfa.harvard.edu',
       url='http://cxc.harvard.edu/sherpa/',
