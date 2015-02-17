@@ -14,7 +14,7 @@ requirements:
    - scipy
    - astlib
    - sherpa
-   - numpy
+   - numpy 1.8.*
    - sampy
 
   build:
