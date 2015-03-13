@@ -978,14 +978,16 @@ def spectrum_redshift_calc(private_key, sender_id, msg_id, mtype, params,
             payload = DictionaryClass(params)
             x = decode_string(payload.x)
             y = decode_string(payload.y)
+            yerr = decode_string(payload.yerr)
             from_redshift = float(payload.from_redshift)
             to_redshift = float(payload.to_redshift)
 
-            sed = Sed(x, y, from_redshift)
+            sed = Sed(x, y, yerr, from_redshift)
             sed.redshift(to_redshift)
 
             payload.x = encode_string(sed.wavelength)
             payload.y = encode_string(sed.flux)
+            payload.yerr = encode_string(sed.err)
 
             reply_success(msg_id, mtype, payload)
 

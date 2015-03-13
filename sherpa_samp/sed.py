@@ -23,7 +23,7 @@ __author__="olaurino"
 __date__ ="$Feb 4, 2013 5:05:26 PM$"
 
 from astLib.astSED import SED as astSed
-from numpy import trapz, array, logspace, linspace, ceil, floor, log10
+from numpy import trapz, array, logspace, linspace, ceil, floor, log10, nan
 
 class Sed(astSed):
     """
@@ -34,7 +34,7 @@ class Sed(astSed):
     doesn't even attempt to be a comprehensive SED class.
     """
     
-    def __init__(self, wavelength, flux, z=0.0):
+    def __init__(self, wavelength, flux, err=None, z=0.0):
         """
         The difference between this constructor and the astLib one
         is that z has different semantics here, being the redhisft of the source,
@@ -44,13 +44,18 @@ class Sed(astSed):
         """
         wavelength = array(wavelength)
         flux = array(flux)
+        if err is not None:
+            err = array(err)
         
-	si = wavelength.argsort()
-	wavelength.sort()
-	flux = flux[si]
+        si = wavelength.argsort()
+        wavelength.sort()
+        flux = flux[si]
+        if err is not None:
+            err = err[si]
 
-	if z==0.0:
+        if z==0.0:
             astSed.__init__(self, wavelength, flux)
+            self.err = err
             return
         
         
@@ -62,6 +67,7 @@ class Sed(astSed):
         flux_z0 = flux*z_total_flux/z0_total_flux
         
         astSed.__init__(self, wavelength_z0, flux_z0, z)
+        self.err = err
         
     def interpolate(self, function, interval, num_bins, log):
         """
