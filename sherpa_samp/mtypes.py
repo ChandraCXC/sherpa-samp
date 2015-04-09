@@ -35,7 +35,7 @@ from sherpa_samp.utils import encode_string, decode_string, capture_exception, D
 from astLib.astSED import Passband
 from sherpa.utils import linear_interp, neville, nearest_interp
 from sherpa_samp.interpolation import interp1d
-from sherpa_samp.sedstacker.sed import normalize, redshift, stack
+from sherpa_samp.sedstacker_iris.sed import normalize, redshift, stack
 from sedstacker.iris.sed import IrisSed, IrisStack
 from sherpa_samp.sed import Sed
 import sedstacker.sed
