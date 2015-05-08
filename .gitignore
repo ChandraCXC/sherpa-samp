@@ -2,3 +2,4 @@
 SAMPSherpa.log
 .idea
 *.egg-info
+dist

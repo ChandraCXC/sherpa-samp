@@ -17,6 +17,7 @@
 #
 
 import unittest
+import numpy as np
 
 from sherpa_samp.utils import DictionaryClass
 from sherpa_samp.sed import Sed
@@ -31,12 +32,12 @@ class  Sed_TestCase(unittest.TestCase):
     #    self.foo = None
 
     def test_sed(self):
-        s = Sed(range(10), range(10))
+        s = Sed(range(10), range(10), range(10))
         
         self.assertEqual(tuple(range(10)), tuple(s.wavelength))
         self.assertEqual(tuple(range(10)), tuple(s.flux))
         
-        s = Sed(range(10), range(10), 3)
+        s = Sed(range(10), range(10), range(10), 3)
         
         self.assertEqual(tuple(range(10)), tuple(s.wavelength))
         self.assertEqual(tuple(range(10)), tuple(s.flux))
@@ -55,7 +56,35 @@ class  Sed_TestCase(unittest.TestCase):
         self.assertEqual(5, obj.from_redshift)
         
     def test_redshift(self):
-        pass
+
+        # this test should make sure that the yerr's are sorted with
+        # their corresponding (x, y) points
+
+        # what the yerrs should be
+        yerr = np.array(np.arange(14))+1
+
+        # make dummy data. I'm using duplicate values in the x array
+        # because duplicate x values are common in Iris SEDs.
+        y = np.array([0.68, 0.30, 0.35, 0.30, 0.22, 0.25, 0.63, 0.51, 0.14, 0.14, 0.14, 0.14, 0.14, 1.22])
+        x = y
+
+        s = Sed(x, y, yerr, z=1)
+        s.redshift(0)
+
+        np.testing.assert_array_equal(s.err, [9, 10, 11, 12, 13, 5, 6, 2, 4, 3, 8, 7, 1, 14])
+
+        yerr = np.array(np.arange(30))+1
+        y = np.array(np.arange(30))+1
+        x = np.array(np.arange(10))+1
+        x = np.concatenate([x, x, x], axis=0)
+
+        s = Sed(x, y, yerr, z=1)
+        s.redshift(0)
+
+        # since y and yerr are the same before redshifting, and only y is affected during redshifting,
+        # will can multiply the resultant SED flux array by a constant to get back to the flux error array.
+        # In this case, the constant is 0.5.
+        np.testing.assert_array_equal(s.err, s.flux * 0.5)
 
 
 if __name__ == '__main__':
