@@ -1295,31 +1295,22 @@ def main():
         try:
             time.sleep(1.5)
             connected = True
-            # try:
             if cli.hub.getRunningHubs():
-            # cli.hub.ping()
                 last_ping = time.time()
-                # info("Successful ping at: "+str(last_ping))
+                info("Successful ping at: "+str(last_ping))
             else:
-                # logging.exception(e)
                 connected = False
-            # except (CannotSendRequest, ResponseNotReady):
-            #     pass
-            # except Exception, e:
-            #     logging.exception(e)
-            #     connected = False
             if not connected:
                 info("not connected")
                 cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
                 try:
                     cli.connect()
                     register()
-                except samp.SAMPHubError:
-                    pass
-
+                except samp.SAMPHubError as e:
+                    logging.exception(e)
                 if time.time() > last_ping + 60:
                     info("giving up")
-                    raise Exception("Ping timeout")
+                    raise KeyboardInterrupt("Ping timeout")
             if not cli.isConnected():
                 try:
                     cli.connect()
