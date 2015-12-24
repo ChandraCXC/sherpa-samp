@@ -1289,10 +1289,10 @@ def register():
 
 def main():
     global cli
-    try:
-        global __serving
-        last_ping = time.time()
-        while __serving:
+    global __serving
+    last_ping = time.time()
+    while __serving:
+        try:
             time.sleep(1.5)
             connected = True
             # try:
@@ -1317,7 +1317,7 @@ def main():
                 except samp.SAMPHubError:
                     pass
 
-                if time.time() > last_ping + 30:
+                if time.time() > last_ping + 60:
                     info("giving up")
                     raise Exception("Ping timeout")
             if not cli.isConnected():
@@ -1326,12 +1326,10 @@ def main():
                     register()
                 except samp.SAMPHubError:
                     pass
-
-    except Exception, e:
-        logging.exception(e)
-    finally:
-        if cli is not None and cli.isConnected():
-            cli.disconnect()
+        except Exception, e:
+            logging.exception(e)
+    if cli is not None and cli.isConnected():
+        cli.disconnect()
 
 
 if __name__ == '__main__':
