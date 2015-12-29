@@ -1305,39 +1305,32 @@ def register():
 def main():
     info("Starting " + __name__)
     global cli
+    cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
     global __serving
     last_ping = time.time()
     while __serving:
         try:
             time.sleep(1.5)
             connected = True
-            if cli.hub.getRunningHubs():
+            if cli.hub.getRunningHubs() and cli.isConnected():
                 last_ping = time.time()
                 info("Successful ping at: "+str(last_ping))
             else:
                 connected = False
             if not connected:
                 info("not connected")
-                cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
                 try:
                     info("trying connection")
                     cli.connect()
                     info("trying registration")
                     register()
+                    info("registered")
                 except samp.SAMPHubError as e:
                     warn("got SAMPHubError")
                     logging.exception(e)
                 if time.time() > last_ping + 60:
                     warn("giving up")
                     raise KeyboardInterrupt("Ping timeout")
-            if not cli.isConnected():
-                try:
-                    info("trying connection")
-                    cli.connect()
-                    register()
-                except samp.SAMPHubError:
-                    warn("got SAMPHubError, retrying")
-                    pass
         except Exception, e:
             warn("Got exception during main monitor thread")
             logging.exception(e)
