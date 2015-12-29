@@ -75,14 +75,18 @@ _confidence_tasks = []
 
 
 def _sig_handler(signum, frame):
-    if cli.isConnected():
+    info("Got termination signal")
+    if cli is not None and cli.isConnected():
         try:
             cli.disconnect()
-        except:
-            pass
-    if (signum == signal.SIGINT):
+        except Exception as e:
+            warn("Could not disconnect cleanly")
+            logging.exception(e)
+    if signum == signal.SIGINT:
+        info("Signal is SIGINT")
         raise KeyboardInterrupt()
-    if (signum == signal.SIGTERM):
+    if signum == signal.SIGTERM:
+        info("Signal is SIGTERM")
         sys.exit(1)
 
 try:
@@ -91,7 +95,8 @@ try:
     signal.signal(signal.SIGINT, _sig_handler)   # I.e., kill -2
     signal.signal(signal.SIGTERM, _sig_handler)  # I.e., kill or kill -15
 except ValueError:
-    pass
+    error("Cannot register signal handlers")
+    sys.exit(1)
 
 
 def reply_success(msg_id, mtype, params={}):
@@ -1298,6 +1303,7 @@ def register():
 
 
 def main():
+    info("Starting " + __name__)
     global cli
     global __serving
     last_ping = time.time()
@@ -1314,23 +1320,28 @@ def main():
                 info("not connected")
                 cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
                 try:
+                    info("trying connection")
                     cli.connect()
+                    info("trying registration")
                     register()
                 except samp.SAMPHubError as e:
+                    warn("got SAMPHubError")
                     logging.exception(e)
                 if time.time() > last_ping + 60:
-                    info("giving up")
+                    warn("giving up")
                     raise KeyboardInterrupt("Ping timeout")
             if not cli.isConnected():
                 try:
+                    info("trying connection")
                     cli.connect()
                     register()
                 except samp.SAMPHubError:
+                    warn("got SAMPHubError, retrying")
                     pass
         except Exception, e:
+            warn("Got exception during main monitor thread")
             logging.exception(e)
-    if cli is not None and cli.isConnected():
-        cli.disconnect()
+    _sig_handler(signal.SIGINT)
 
 
 if __name__ == '__main__':
