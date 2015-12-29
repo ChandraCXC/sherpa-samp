@@ -76,7 +76,10 @@ _confidence_tasks = []
 
 def _sig_handler(signum, frame):
     if cli.isConnected():
-        cli.disconnect()
+        try:
+            cli.disconnect()
+        except:
+            pass
     if (signum == signal.SIGINT):
         raise KeyboardInterrupt()
     if (signum == signal.SIGTERM):
@@ -92,10 +95,17 @@ except ValueError:
 
 
 def reply_success(msg_id, mtype, params={}):
-    cli.reply(msg_id, {"samp.status": samp.SAMP_STATUS_OK,
-                       "samp.result": params,
-                       })
-    info("sent reply_success to " + msg_id)
+    for i in range(0, 100):
+        try:
+            cli.reply(msg_id, {"samp.status": samp.SAMP_STATUS_OK,
+                   "samp.result": params,
+                   })
+            info("sent reply_success to " + msg_id)
+        except (CannotSendRequest, ResponseNotReady) as e:
+            warn("cannot send request:")
+            logging.exception(e)
+            continue
+        break
 
 def reply_error(msg_id, exception, e, mtype):
 
