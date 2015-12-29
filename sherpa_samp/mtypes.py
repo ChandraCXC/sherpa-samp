@@ -76,7 +76,7 @@ _confidence_tasks = []
 
 def _sig_handler(signum, frame):
     info("Got termination signal")
-    if cli is not None and cli.isConnected():
+    if cli is not None:
         try:
             cli.disconnect()
         except Exception as e:
@@ -85,8 +85,8 @@ def _sig_handler(signum, frame):
     if signum == signal.SIGINT:
         info("Signal is SIGINT")
         raise KeyboardInterrupt()
-    if signum == signal.SIGTERM:
-        info("Signal is SIGTERM")
+    else:
+        info("Signal is not SIGINT")
         sys.exit(1)
 
 try:
@@ -1269,6 +1269,7 @@ __serving = True
 def stop():
     global __serving
     __serving = False
+    _sig_handler(signal.SIGINT, None)
 
 
 def register():
@@ -1306,35 +1307,38 @@ def main():
     info("Starting " + __name__)
     global cli
     cli = samp.SAMPIntegratedClient(metadata, addr='localhost')
-    global __serving
-    last_ping = time.time()
-    while __serving:
-        try:
-            time.sleep(1.5)
-            connected = True
-            if cli.hub.getRunningHubs() and cli.isConnected():
-                last_ping = time.time()
-                info("Successful ping at: "+str(last_ping))
-            else:
-                connected = False
-            if not connected:
-                info("not connected")
-                try:
-                    info("trying connection")
-                    cli.connect()
-                    info("trying registration")
-                    register()
-                    info("registered")
-                except samp.SAMPHubError as e:
-                    warn("got SAMPHubError")
-                    logging.exception(e)
-                if time.time() > last_ping + 60:
-                    warn("giving up")
-                    raise KeyboardInterrupt("Ping timeout")
-        except Exception, e:
-            warn("Got exception during main monitor thread")
-            logging.exception(e)
-    _sig_handler(signal.SIGINT)
+    try:
+        global __serving
+        last_ping = time.time()
+        while __serving:
+            try:
+                time.sleep(1.5)
+                connected = True
+                if cli.hub.getRunningHubs() and cli.isConnected():
+                    last_ping = time.time()
+                    info("Successful ping at: "+str(last_ping))
+                else:
+                    connected = False
+                if not connected:
+                    info("not connected")
+                    try:
+                        info("trying connection")
+                        cli.connect()
+                        info("trying registration")
+                        register()
+                        info("registered")
+                    except samp.SAMPHubError as e:
+                        warn("got SAMPHubError")
+                        logging.exception(e)
+                    if time.time() > last_ping + 60:
+                        warn("giving up")
+                        raise KeyboardInterrupt("Ping timeout")
+            except Exception, e:
+                warn("Got exception during main monitor thread")
+                logging.exception(e)
+    finally:
+        info("stopping")
+        stop()
 
 
 if __name__ == '__main__':
