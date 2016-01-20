@@ -1232,6 +1232,10 @@ def stack_stack(private_key, sender_id, msg_id, mtype, params,
     except Exception:
         error(str(capture_exception()))
 
+
+def ping(private_key, sender_id, msg_id, mtype, params, extra):
+    reply_success(msg_id, mtype, {})
+
 #
 ## SAMP MTypes
 #
@@ -1258,7 +1262,8 @@ _mtypes = {
     "spectrum.integrate"   : spectrum_integrate,
     "stack.redshift" : stack_redshift,
     "stack.normalize" : stack_normalize,
-    "stack.stack" : stack_stack
+    "stack.stack" : stack_stack,
+    "sherpa.ping" : ping,
 }
 
 MTYPE_SPECTRUM_FIT_CONFIDENCE_EVENT = "spectrum.fit.confidence.event"
