@@ -1318,10 +1318,11 @@ def main():
         while __serving:
             try:
                 time.sleep(1.5)
-                connected = True
                 if cli.hub.getRunningHubs() and cli.isConnected():
+                    if not connected:
+                        info("Successful ping at: "+str(last_ping))
+                    connected = True
                     last_ping = time.time()
-                    info("Successful ping at: "+str(last_ping))
                 else:
                     connected = False
                 if not connected:
