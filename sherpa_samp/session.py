@@ -60,11 +60,10 @@ def check_for_nans(ui):
         if not isinstance(stat, (sherpa.stats.LeastSq, sherpa.stats.CStat, sherpa.stats.Cash)):
             mask |= numpy.isnan(err)
             # When using chi-squared, also automatically filter out
-            # data points where the error bar is zero -- actually where
-            # (err - 0.0) is smaller than epsilon.  The fit will 
+            # data points where the error bar is zero. The fit will
             # proceed with usable errors.
-            import numpy.core.machar as ma
-            mask = numpy.where(numpy.abs(err - 0.0) < ma.MachAr().epsilon, True, mask)
+            mask |= err == 0
+
         session.set_filter(ii, mask, ignore=True)
 
 #
