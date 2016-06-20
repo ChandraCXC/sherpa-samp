@@ -894,28 +894,24 @@ def spectrum_fit_calc_model_values(private_key, sender_id, msg_id, mtype,
             reply_error(msg_id, sedexceptions.ModelException, e, mtype)
             return
 
-        modelvals = []
+        modelvals = {}
         try:
-            # native Sherpa command
-            for id in ui.session.list_data_ids():
-                # native Sherpa commands
-                data  = ui.session.get_data(id)
-                model = ui.session.get_model(id)
+            # native Sherpa commands
+            data  = ui.session.get_data(0)
+            model = ui.session.get_model(0)
 
-                vals = data.eval_model(model)
-                vals = encode_string(vals)
-                modelvals.append(vals)
+            vals = data.eval_model(model)
+            vals = encode_string(vals)
 
-
-            modelvals = [encode_string(ui.session.get_data(0).x),
-                         modelvals[0],
-                         encode_string(numpy.ones_like(ui.session.get_data(0).x))]
+            modelvals["y"] = vals
+            modelvals["x"] = encode_string(ui.session.get_data(0).x)
+            modelvals["staterror"] = encode_string(numpy.ones_like(ui.session.get_data(0).x))
 
         except Exception, e:
             reply_error(msg_id, sedexceptions.ModelException, e, mtype)
             return
 
-        reply_success(msg_id, mtype, {'results' : modelvals})
+        reply_success(msg_id, mtype, modelvals)
 
     except Exception:
         error(str(capture_exception()))
