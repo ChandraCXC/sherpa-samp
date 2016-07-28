@@ -1,9 +1,9 @@
 package:
   name: sherpa-samp
-  version: 2.1
+  version: 3.0b1 
 
 build:
-  number: 3
+  number: 0
 
   preserve_egg_dir: yes
 
@@ -14,7 +14,7 @@ requirements:
    - scipy
    - astlib
    - sherpa
-   - numpy 1.8.*
+   - numpy
    - sampy
    - sedstacker 0.1.0_iris
 
