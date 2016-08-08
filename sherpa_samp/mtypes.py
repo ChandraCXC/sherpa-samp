@@ -444,6 +444,7 @@ def spectrum_fit_fit(private_key, sender_id, msg_id, mtype, params, extra):
 
             def worker(ui_p):
                 try:
+                    signal.signal(signal.SIGTERM, signal.SIG_DFL)
                     ui_p.session.fit()
                     results = ui_p.get_fit_results()
                     outq.put(results)
@@ -608,6 +609,7 @@ def spectrum_fit_confidence(private_key, sender_id, msg_id, mtype, params,
 
             def worker(ui_p, cdict):
                 try:
+                    signal.signal(signal.SIGTERM, signal.SIG_DFL)
                     ui_p.set_confidence(cdict)
 
                     handler = ConfidenceHandler()
